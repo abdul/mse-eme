@@ -1,0 +1,6 @@
+<GPACDRM type="CENC AES-CTR">
+
+  <CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="uuid_psec" >
+    <key KID="0x10000000100010001000100000000001" value="0x04714BD8D7E1F3815FC47D0A834F0E17" />
+  </CrypTrack>
+</GPACDRM>
