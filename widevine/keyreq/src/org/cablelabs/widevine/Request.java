@@ -8,18 +8,14 @@ package org.cablelabs.widevine;
  */
 public class Request {
     
-    public static class Track {
-        public enum Type {
-            HD,
-            SD,
-            AUDIO
-        };
-        
+    static class Track {
+        TrackType type;
     }
 
     String content_id;
     String policy;
     String client_id;
     Track tracks[];
-    
+    String token;
+    String rsa_public_key;
 }
