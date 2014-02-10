@@ -3,19 +3,10 @@
 
 package org.cablelabs.widevine;
 
-/**
- * Widevine JSON request object
- */
 public class Request {
     
-    static class Track {
-        TrackType type;
-    }
+    String request;
+    String signature;
+    String signer;
 
-    String content_id;
-    String policy;
-    String client_id;
-    Track tracks[];
-    String token;
-    String rsa_public_key;
 }
