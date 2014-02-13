@@ -62,7 +62,7 @@ public class PlayReadyKeygen {
             System.out.println("******  Invalid key ID (not valid Base64 string)!");
         }
         
-        // Ensure that key seed is no greater than or equal to 30 bytes in length
+        // Ensure that key seed is at least 30 bytes in length
         byte[] key_seed_raw = Base64.decodeBase64(key_seed_str);
         if (key_seed_raw.length < 30) {
             usage();
@@ -72,7 +72,6 @@ public class PlayReadyKeygen {
         
         // Truncate to 30 bytes
         byte[] key_seed = Arrays.copyOf(key_seed_raw, 30);
-        
         
         byte[] contentKey = new byte[DRM_AES_KEYSIZE_128];
         try {
