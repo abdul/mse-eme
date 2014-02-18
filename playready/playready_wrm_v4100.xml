@@ -1,6 +1,8 @@
 <WRMHEADER version="4.1.0.0" xmlns="http://schemas.microsoft.com/DRM/2007/03/PlayReadyHeader">
   <DATA>
-    <KID value="EAAAABAAEAAQABAAAAAAAQ==" ALGID="AESCTR" CHECKSUM="VOzq8ggEl1A=" />
+    <PROTECTINFO>
+      <KID value="EAAAABAAEAAQABAAAAAAAQ==" ALGID="AESCTR" CHECKSUM="VOzq8ggEl1A=" />
+    </PROTECTINFO>
     <LA_URL>http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&UseSimpleNonPersistentLicense=1</LA_URL>
     <DS_ID>EAAAABAAEAAQABAAAAAAAQ==</DS_ID>
   </DATA>

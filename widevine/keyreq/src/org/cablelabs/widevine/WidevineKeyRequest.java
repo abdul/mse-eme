@@ -21,7 +21,6 @@ public class WidevineKeyRequest {
     private static void usage() {
         System.out.println("usage:  WidevineKeyRequest <content_id> <crypt_xml> <track_id>:<track_type> [<track_id>:<track_type>...]");
         System.out.println("\t <content_id> is a unique string representing the content to be encrypted");
-        System.out.println("\t <crypt_xml> is a filename where the GPAC XML crypt file will be written");
         System.out.println("\t <track_id> is the track ID from the MP4 file to be encrypted");
         System.out.println("\t <track_type> is one of HD, SD, or AUDIO describing the type of the associated track");
     }
@@ -36,20 +35,19 @@ public class WidevineKeyRequest {
         
         int i;
 
-        // Make sure we have 2 args
+        // Make sure we have at least 3 args
         if (args.length < 3) {
             usage();
             System.exit(1);
         }
         
         String content_id_str = args[0];
-        String crypt_filename = args[1];
         
         // Map track type to track ID
         Map<TrackType, String> tracks = new HashMap<TrackType, String>();
         
         // Parse track arguments
-        for (i = 2; i < args.length; i++) {
+        for (i = 1; i < args.length; i++) {
             String track_desc[] = args[i].split(":");
             if (track_desc.length != 2) {
                 usage();
