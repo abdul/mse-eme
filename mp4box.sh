@@ -21,10 +21,4 @@ $gpac_bin_dir/MP4Box -dash 10000 -rap -bs-switching no -sample-groups-traf \
   $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4#audio:id=audio \
   $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4#video:id=3Mb 
 
-#$gpac_bin_dir/MP4Box -dash 10000 -rap -bs-switching no -sample-groups-traf \
-#  -profile onDemand -out bbb_720p_h264.mpd \
-#  $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4#video:id=2Mb \
-#  $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4#audio:id=audio \
-#  $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc.mp4#video:id=3Mb 
-
 popd

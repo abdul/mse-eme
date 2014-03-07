@@ -1,12 +1,12 @@
 <GPACDRM type="CENC AES-CTR">
   <DRMInfo type="pssh" version="0">
     <BS ID128="9a04f07998404286ab92e65be0885f95" />  <!-- PlayReady SystemID -->
-    <BS bits="32" value="708" endian="little" />     <!-- PlayReady Header Object Size -->
+    <BS bits="32" value="706" endian="little" />     <!-- PlayReady Header Object Size -->
     <BS bits="16" value="1" endian="little" />       <!-- Number of records -->
 
     <!-- First record -->
     <BS bits="16" value="1" endian="little" />       <!-- Rights Management record type -->
-    <BS bits="16" value="698" endian="little" />     <!-- Record length -->
+    <BS bits="16" value="696" endian="little" />     <!-- Record length -->
     <BS dataFile="playready_wrm_v4100_utf16.xml" dataLength="0" /> <!-- WRM in external file -->
   </DRMInfo>
 
