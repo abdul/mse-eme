@@ -2,7 +2,7 @@
   <DRMInfo type="pssh" version="0">
     <BS ID128="00000000000000000000000000000000" />  <!-- ClearKey SystemID -->
     <BS bits="8" value="0" />                        <!-- ClearKey Type (0 = URL, 1 = JSON) -->
-    <BS bits="16" value="100" />                     <!-- URL length -->
+    <BS bits="16" value="98" />                      <!-- URL length -->
     <BS dataFile="clearkey_url.txt" dataLength="0" />
   </DRMInfo>
 
