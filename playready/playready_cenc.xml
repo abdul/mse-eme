@@ -1,14 +1,15 @@
 <GPACDRM type="CENC AES-CTR">
   <DRMInfo type="pssh" version="0">
     <BS ID128="9a04f07998404286ab92e65be0885f95" />  <!-- PlayReady SystemID -->
-    <BS bits="32" value="762" endian="little" />     <!-- PlayReady Header Object Size -->
+    <!--MP4Box automaically inserts the 32-bit PSSH size field here -->
+
+    <BS bits="32" value="___PRHO_SIZE___" endian="little" />     <!-- PlayReady Header Object Size -->
     <BS bits="16" value="1" endian="little" />       <!-- Number of records -->
 
     <!-- First record -->
     <BS bits="16" value="1" endian="little" />       <!-- Rights Management record type -->
-    <BS bits="16" value="752" endian="little" />     <!-- Record length -->
-    <BS dataFile="playready_wrm_v4000_utf16.xml" dataLength="0" /> <!-- WRM in external file -->
-
+    <BS bits="16" value="___WRM_SIZE___" endian="little" />     <!-- Record length -->
+    <BS dataFile="wrm_utf16.xml" dataLength="0" />           <!-- WRM in external file -->
   </DRMInfo>
 
   <CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" >
