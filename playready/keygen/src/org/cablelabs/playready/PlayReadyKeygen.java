@@ -4,6 +4,7 @@
 package org.cablelabs.playready;
 
 import java.util.Arrays;
+import java.util.List;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,7 +15,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Base64;
@@ -53,6 +53,7 @@ public class PlayReadyKeygen {
             System.exit(1);;
         }
         
+        // Parse key ID 
         key_id_str = key_id_str.replaceAll("-", "");
         byte[] key_id = null;
         try {
@@ -60,7 +61,20 @@ public class PlayReadyKeygen {
         }
         catch (IllegalArgumentException e) {
             System.out.println("******  Invalid key ID (not valid Base64 string)!");
+            System.exit(1);
         }
+        
+        // Key ID in the PlayReady Header object must be little endian 
+        byte[] ms_le_key_id = new byte[key_id.length];
+        int le_pos = 0;
+        for (int j = 4; j > 0; j--)
+            ms_le_key_id[le_pos++] = key_id[j-1];
+        for (int j = 6; j > 4; j--)
+            ms_le_key_id[le_pos++] = key_id[j-1];
+        for (int j = 8; j > 6; j--)
+            ms_le_key_id[le_pos++] = key_id[j-1];
+        for (int j = 8; j < 16; j++)
+            ms_le_key_id[le_pos++] = key_id[j];
         
         // Ensure that key seed is at least 30 bytes in length
         byte[] key_seed_raw = Base64.decodeBase64(key_seed_str);
@@ -81,7 +95,7 @@ public class PlayReadyKeygen {
             //     - Key ID
             MessageDigest sha256_a = MessageDigest.getInstance("SHA-256");
             sha256_a.update(key_seed);
-            sha256_a.update(key_id);
+            sha256_a.update(ms_le_key_id);
             byte[] sha_a = sha256_a.digest();
             
             // Second hash is
@@ -90,7 +104,7 @@ public class PlayReadyKeygen {
             //     - Key Seed
             MessageDigest sha256_b = MessageDigest.getInstance("SHA-256");
             sha256_b.update(key_seed);
-            sha256_b.update(key_id);
+            sha256_b.update(ms_le_key_id);
             sha256_b.update(key_seed);
             byte[] sha_b = sha256_b.digest();
             
@@ -101,9 +115,9 @@ public class PlayReadyKeygen {
             //     - Key ID
             MessageDigest sha256_c = MessageDigest.getInstance("SHA-256");
             sha256_c.update(key_seed);
-            sha256_c.update(key_id);
+            sha256_c.update(ms_le_key_id);
             sha256_c.update(key_seed);
-            sha256_c.update(key_id);
+            sha256_c.update(ms_le_key_id);
             byte[] sha_c = sha256_c.digest();
             
             for (int i = 0; i < DRM_AES_KEYSIZE_128; i++) {
@@ -124,7 +138,7 @@ public class PlayReadyKeygen {
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             SecretKeySpec key = new SecretKeySpec(contentKey, "AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            checksum = Arrays.copyOf(cipher.doFinal(key_id), 8);
+            checksum = Arrays.copyOf(cipher.doFinal(ms_le_key_id), 8);
         }
         catch (NoSuchAlgorithmException e) {
             System.out.println("Java Virtual Machine does not support AES/ECB cipher!");
@@ -155,7 +169,8 @@ public class PlayReadyKeygen {
         System.out.println("===============================================");
         System.out.println("Content key ID = ");
         System.out.println("\t0x" + DatatypeConverter.printHexBinary(key_id));
-        System.out.println("\t" + Base64.encodeBase64String(key_id) + " (Base64)");
+        System.out.println("\t0x" + DatatypeConverter.printHexBinary(ms_le_key_id) + " (little endian)");
+        System.out.println("\t" + Base64.encodeBase64String(ms_le_key_id) + " (Base64, little endian)");
         System.out.println("Content key = ");
         System.out.println("\t0x" + DatatypeConverter.printHexBinary(contentKey));
         System.out.println("\t" + Base64.encodeBase64String(contentKey) + " (Base64)");

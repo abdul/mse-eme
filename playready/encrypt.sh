@@ -9,14 +9,18 @@ if [ -z $CONTENT_DIR ]; then
   exit
 fi
 
+if [ -z $1 ]; then
+  echo "Must provide version argument (either 4000 or 4100)"
+  exit
+fi
+
 content_root_dir=$CONTENT_DIR
 gpac_bin_dir="$GPAC_ROOT_DIR/bin/gcc"
 export LD_LIBRARY_PATH=$gpac_bin_dir
 
 pushd .
 
-version=4000
-#version=4100
+version=$1
 
 # Remove all leading whitespace and then remove all end of line characters
 # Then convert to UTF-16LE

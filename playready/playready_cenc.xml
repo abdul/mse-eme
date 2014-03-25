@@ -12,7 +12,7 @@
     <BS dataFile="wrm_utf16.xml" dataLength="0" />           <!-- WRM in external file -->
   </DRMInfo>
 
-  <CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" >
-    <key KID="0x10000000100010001000100000000001" value="0x04714BD8D7E1F3815FC47D0A834F0E17" />
+  <CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x36FD24A3052C8C03" saiSavedBox="senc" >
+    <key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" />
   </CrypTrack>
 </GPACDRM>
