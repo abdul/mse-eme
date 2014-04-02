@@ -2,6 +2,7 @@
 var https = require('https');
 var http = require('http');
 var fs = require('fs');
+var url = require('url');
 
 keys = {
     '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
@@ -29,18 +30,32 @@ https.createServer(options, function(req, res) {
 }).listen(8585);
 
 http.createServer(function(req, res) {
-    var requested_kid = "10000000100010001000100000000001";
-    var key_b64 = keys[requested_kid].toString('base64').replace(/=/g, "");
-    var requested_kid_b64 =
-        new Buffer("10000000100010001000100000000001", 'hex').toString('base64').replace(/=/g, "");
-    var jwk = {
-        kty: "oct",
-        alg: "A128GCM",
-        kid: requested_kid_b64,
-        k: key_b64
-    };
+    var parsed_url = url.parse(req.url, true);
+    var query = parsed_url.query;
+
+    // Validate query string
+    if (query === undefined || query.keyid === undefined) {
+        res.writeHeader(400, "Illegal query string");
+        res.end();
+    }
+
+    var keyIDs = [];
+    if (query.keyid instanceof Array) {
+        keyIDs = query.keyid;
+    } else {
+        keyIDs.push(query.keyid);
+    }
+
     var jwk_array = [];
-    jwk_array.push(jwk);
+    for (var i = 0; i < keyIDs.length; i++) {
+        var jwk = {
+            kty: "oct",
+            alg: "A128GCM",
+            kid: new Buffer(keyIDs[i], 'hex').toString('base64').replace(/=/g, ""),
+            k: keys[keyIDs[i]].toString('base64').replace(/=/g, "")
+        };
+        jwk_array.push(jwk);
+    }
     var response = {
         keys: jwk_array
     };
