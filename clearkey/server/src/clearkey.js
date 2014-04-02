@@ -4,8 +4,8 @@ var http = require('http');
 var fs = require('fs');
 
 keys = {
-    '10000000100010001000000000000001': new Buffer("04714BD8D7E1F3815FC47D0A834F0E17", 'hex'),
-    '10000000100010001000000000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E17", 'hex')
+    '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
+    '10000000100010001000100000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E18", 'hex')
 };
 
 var options = {
@@ -29,10 +29,10 @@ https.createServer(options, function(req, res) {
 }).listen(8585);
 
 http.createServer(function(req, res) {
-    var requested_kid = "10000000100010001000000000000001";
+    var requested_kid = "10000000100010001000100000000001";
     var key_b64 = keys[requested_kid].toString('base64').replace(/=/g, "");
     var requested_kid_b64 =
-        new Buffer("10000000100010001000000000000001", 'hex').toString('base64').replace(/=/g, "");
+        new Buffer("10000000100010001000100000000001", 'hex').toString('base64').replace(/=/g, "");
     var jwk = {
         kty: "oct",
         alg: "A128GCM",
