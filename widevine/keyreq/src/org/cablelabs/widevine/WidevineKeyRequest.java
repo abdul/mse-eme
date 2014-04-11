@@ -25,7 +25,10 @@ import org.apache.commons.codec.binary.Hex;
 public class WidevineKeyRequest {
 
     private static void usage() {
-        System.out.println("usage:  WidevineKeyRequest <content_id> <crypt_xml> <track_id>:<track_type> [<track_id>:<track_type>...]");
+        System.out.println("usage:  WidevineKeyRequest [-s] <content_id> <track_id>:<track_type> [<track_id>:<track_type>...]");
+        System.out.println("\t OPTIONS:");
+        System.out.println("\t\t -s If present, the request will signed with the CableLabs' key");
+        System.out.println("");
         System.out.println("\t <content_id> is a unique string representing the content to be encrypted");
         System.out.println("\t <track_id> is the track ID from the MP4 file to be encrypted");
         System.out.println("\t <track_type> is one of HD, SD, or AUDIO describing the type of the associated track");
@@ -35,7 +38,8 @@ public class WidevineKeyRequest {
     private static final String CLIENT_ID = null;
     private static final String[] DRM_TYPES = { "WIDEVINE" };
     
-    private static final String SERVER_URL = "http://license.widevine.com/cenc/getlicense/cablelabs";
+    private static final String CABLELABS_SERVER_URL = "http://license.widevine.com/cenc/getlicense/cablelabs";
+    private static final String TEST_SERVER_URL = "http://license.widevine.com/cenc/getlicense/widevine_test";
     
     private static final byte[] CABLELABS_IV = { (byte)0x99, (byte)0xce, (byte)0xac, (byte)0x24,
                                                  (byte)0x52, (byte)0xb5, (byte)0x7b, (byte)0x96,
@@ -49,6 +53,8 @@ public class WidevineKeyRequest {
                                                   (byte)0x46, (byte)0x36, (byte)0xda, (byte)0x6e,
                                                   (byte)0xed, (byte)0x1c, (byte)0x8c, (byte)0x53,
                                                   (byte)0x65, (byte)0xc0, (byte)0x91, (byte)0x02 };
+    
+    private static boolean sign_request = false;
     
     public static void main(String[] args) {
         
@@ -65,8 +71,24 @@ public class WidevineKeyRequest {
         // Map track type to track ID
         Map<TrackType, String> tracks = new HashMap<TrackType, String>();
         
-        // Parse track arguments
+        // Parse arguments
         for (i = 1; i < args.length; i++) {
+            
+            // Parse options
+            if (args[i].startsWith("-")) {
+                if (args[i].equals("-s")) {
+                    sign_request = true;
+                }
+                else {
+                    usage();
+                    System.err.println("Illegal argument: " + args[i]);
+                    System.exit(1);;
+                }
+                
+                continue;
+            }
+            
+            // Parse tracks
             String track_desc[] = args[i].split(":");
             if (track_desc.length != 2) {
                 usage();
@@ -113,29 +135,38 @@ public class WidevineKeyRequest {
         Request request = new Request();
         request.request = jsonRequestMessageB64;
         
-        // Create message signature
-        try {
-            MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-            sha1.update(jsonRequestMessageB64.getBytes());
-            byte[] sha1_b = sha1.digest();
-            System.out.println("SHA-1 hash of base64 'request' field = 0x" + Hex.encodeHexString(sha1_b));
+        String serverURL = null;
+        if (sign_request) {
+            // Create message signature
+            try {
+                MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+                sha1.update(jsonRequestMessageB64.getBytes());
+                byte[] sha1_b = sha1.digest();
+                System.out.println("SHA-1 hash of base64 'request' field = 0x" + Hex.encodeHexString(sha1_b));
+                
+                // Use AES/CBC/PKCS5Padding with CableLabs Key and InitVector
+                SecretKeySpec keySpec = new SecretKeySpec(CABLELABS_KEY, "AES");
+                IvParameterSpec ivSpec = new IvParameterSpec(CABLELABS_IV);
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                
+                // Encrypt the SHA-1 hash of our request message
+                cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+                byte[] encrypted = cipher.doFinal(sha1_b);
+                System.out.println("AES/CBC/PKCS5Padding Encrypted SHA1-hash = 0x" + Hex.encodeHexString(encrypted));
+                
+                request.signer = "cablelabs";
+                request.signature = Base64.encodeBase64String(encrypted);
+                
+                serverURL = CABLELABS_SERVER_URL;
+            }
+            catch (Exception e) {
+                System.out.println("Error performing message encryption!  Message = " + e.getMessage());
+                System.exit(1);
+            }
+        } else {
+            request.signer = "widevine_test";
             
-            // Use AES/CBC/PKCS5Padding with CableLabs Key and InitVector
-            SecretKeySpec keySpec = new SecretKeySpec(CABLELABS_KEY, "AES");
-            IvParameterSpec ivSpec = new IvParameterSpec(CABLELABS_IV);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            
-            // Encrypt the SHA-1 hash of our request message
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-            byte[] encrypted = cipher.doFinal(sha1_b);
-            System.out.println("AES/CBC/PKCS5Padding Encrypted SHA1-hash = 0x" + Hex.encodeHexString(encrypted));
-            
-            request.signer = "cablelabs";
-            request.signature = Base64.encodeBase64String(encrypted);
-        }
-        catch (Exception e) {
-            System.out.println("Error performing message encryption!  Message = " + e.getMessage());
-            System.exit(1);
+            serverURL = TEST_SERVER_URL;
         }
         
         String jsonRequest = gson.toJson(request);
@@ -146,12 +177,12 @@ public class WidevineKeyRequest {
         try {
             
             // Create URL connection
-            URL url = new URL(SERVER_URL);
+            URL url = new URL(serverURL);
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setRequestMethod("POST");
             con.setDoOutput(true);
             
-            System.out.println("Sending HTTP POST to " + SERVER_URL);
+            System.out.println("Sending HTTP POST to " + serverURL);
             
             // Write POST data
             DataOutputStream out = new DataOutputStream(con.getOutputStream());
