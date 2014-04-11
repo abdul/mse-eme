@@ -5,6 +5,7 @@ package org.cablelabs.widevine;
 
 public class Response {
 
-    String response;
-    String signature;
+    String status;
+    String status_message;
+    String[] supported_tracks;
 }
