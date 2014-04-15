@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+    <title>CableLabs MSE-EME Reference Platform - Software Documentation</title>
+    <meta name="generator" content="CableLabs" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="bootstrap-3.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!--[if lt IE 9]>
+          <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+  
+  <body>
+    <header class="navbar navbar-default navbar-static-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="http://www.cablelabs.com" class="navbar-brand">CableLabs</a>
+        </div>
+        <nav class="collapse navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="#">MP4</a>
+            </li>
+            <li>
+              <a href="#">WebM</a>
+            </li>
+          </ul>
+          <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 bs-docs-sidebar" id="leftCol">
+              	
+          <div class="well"> 
+            <ul class="nav nav-list bs-docs-sidenav" id="sidebar">
+              <li><a href="#overview">Overview</a></li>
+              <li><a href="#content-creation">Content Creation</a></li>
+              <li><a href="#playback">Playback</a></li>
+            </ul>
+          </div>
+
+        </div>  
+        <div class="col-md-9">
+          <h2 id="sec0">Overview</h2>
+            
+          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to
+              the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> 
+              (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>).  
+              allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player
+              applications to deliver individual video, audio, and data buffers to the browser’s media engine 
+              <abbr title="Encrypted Media Extensions">EME</abbr> 
+              (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>)
+              allows playback of encrypted media by introducing Javascript APIs that allow player applications
+              to perform encryption key management with a DRM-specific
+              <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
+            
+          <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the
+              current landscape of support for these W3C extensions in the open source and proprietary
+              technology arenas.  More specifically, it contains working examples of content creation and
+              encryption of MPEG DASH content along with subsequent playback of that content on supported web
+              browsers.</p>
+            
+          <hr class="col-md-12">
+            
+          <h2 id="content-creation">Content Creation</h2>
+          <p>This section describes several open source tools along with scripts we have developed to
+              transcode/transrate, encrypt (with one or more DRMSs), and perform DASH segmentation of existing
+              MP4/H.264 content.</p>    	
+            
+          <p>For creating content, we have explored options both in the open-source and commercial spaces.
+              While the tools documented below may not represent an exhaustive list of the options available in
+              either space, they provided the shortest path to achieving desired levels of functionality for the
+              project.  We have mostly focused on content that follows the
+              <a href="http://dashif.org/white-papers/">DASH-AVC/264</a> guidelines as established by the
+              <a href="http://www.dashif.org">DASH Industry Forum</a>.</p>
+
+          <p>For our evaluation, we received a functionality-limited version of the commercially available
+              <a href="http://www.fokus.fraunhofer.de/en/fame/projects/current_projects/famium/index.html">FAMIUM</a>
+              toolset from Fraunhofer FOKUS.  Instructions for the Fraunhofer tools can be found in a separate
+              document.  Where applicable, we will augment their provided information with our own here in this
+              document.</p>
+ 
+          <h3 id="transcoding">Media Transcoding/Transrating</h3>
+          <p>The first step in creating DASH content is to transcode your high-quality source content to
+              AVC/H.264 video and AAC audio in various resolutions and bitrates.</p>
+            
+          <h4 id="libav">libAV</h4>
+          <p>For open-source offerings, we chose <a href="http://www.libav.org">libAV</a> for transcoding and
+              transrating.  libAV is a fork of the <a href="http://www.ffmpeg.org">ffmpeg</a> project and still
+              maintains some compatibility with ffmpeg as far as command-line structure and usage is involved.
+              Therefore, it may be possible to take these instructions and use them with ffmpeg instead.  All
+              build instructions below have been tested on Ubuntu 13.10 but may work on any Debian-based
+              Linux distribution.</p>
+
+          <p>First install the basic components for git and software compilation.</p>
+          <pre>sudo apt-get install essential-build git yasm</pre>
+          
+          <p>For transcoding video to H.264 and AAC-LC you will need to build libav from source, with those
+              components enabled.  First you must install the development libraries for libx264 and
+              libfdk-aac.</p> 
+          <pre>sudo apt-get install libx264-dev libfdk-aac-dev</pre>
+          
+          <p>Then get the libav sources from git. Configure, build, and install.</p>
+          <pre>git clone git://git.libav.org/libav.git
+cd libav
+./configure --enable-nonfree --enable-gpl --enable-libx264 --enable-libfdk-aac
+make
+sudo make install </pre>
+          
+          <p>Once you have libav built, you have a wide variety of choices for generating your adaptive bitrate
+              streams. You must run <i>avconv</i> once for each adaptive profile.  Below is an example that will
+              generate 2 adaptive streams (AVC High @ L3.1) at 2Mb/s and 3Mb/s:</p>
+          <pre>avconv -i input_720p.mov
+          -codec:v libx264 -profile:v high -level 31 -b:v 2000k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_720p_h264-2Mb-high-3.1_aac-lc.mp4
+avconv -i input720p.mov
+          -codec:v libx264 -profile:v high -level 31 -b:v 3000k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_720p_h264-3Mb-high-3.1_aac-lc.mp4</pre>
+            
+          <p>Here is a more complex example that produces 5 adaptive profiles with varying bitrates, H.264
+              profiles and levels, and scaled resolutions (all with 1 audio bitrate transcoded to AAC-LC):</p>
+          <pre>avconv -i input_1080p.mov -vf "scale=w=512:h=288"
+          -codec:v libx264 -profile:v main -level 21 -b:v 360k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_512x288_h264-360Kb_aac-lc.mp4
+avconv -i input_1080p.mov -vf "scale=w=704:h=396"
+          -codec:v libx264 -profile:v main -level 30 -b:v 620k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_704x396_h264-620Kb_aac-lc.mp4
+avconv -i input_1080p -vf "scale=w=896:h=504"
+          -codec:v libx264 -profile:v high -level 31 -b:v 1340k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_896x504_h264-1340Kb_aac-lc.mp4
+avconv -i input_1080p.mov -vf "scale=w=1280:h=720"
+          -codec:v libx264 -profile:v high -level 32 -b:v 2500k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_1280x720_h264-2500Kb_aac-lc.mp4
+avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
+          -codec:v libx264 -profile:v high -level 40 -b:v 4500k
+          -codec:a libfdk_aac -profile:a aac_low
+          abr_1920x1080_h264-4500Kb_aac-lc.mp4</pre>
+          
+          <h3 id="encryption">Encryption</h3>
+           
+          <hr class="col-md-12">
+              	
+          <h2 id="playback">Playback</h2>
+          <p>In this section, our <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a>-based
+              javascript application is described along with important notes related to each browser/platform
+              combination we have tested</p>
+            
+        </div> 
+  	  </div>
+    </div>
+
+    <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type='text/javascript' src="bootstrap-3.1.1-dist/js/"></script>
+    <script type='text/javascript'>
+      $(document).ready(function() {
+      });
+    </script>
+  </body>
+</html>
