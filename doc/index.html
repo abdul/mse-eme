@@ -6,7 +6,8 @@
     <meta name="generator" content="CableLabs" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link type="text/css" href="bootstrap-custom/css/bootstrap.min.css" rel="stylesheet">
-    <link type="text/css" href="highlight/styles/atelier-dune.dark.css" rel="stylesheet">
+    <link type="text/css" href="highlight/styles/pojoaque.css" rel="stylesheet">
+    <link type="text/css" href="css/doc.css" rel="stylesheet">
 
         <!--[if lt IE 9]>
           <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -52,140 +53,137 @@
 
         </div>
         <div class="col-md-9">
-          <h2 id="sec0">Overview</h2>
+          <h1 id="sec0">Overview</h1>
 
-          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to
-              the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr>
-              (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>).
-              allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player
-              applications to deliver individual video, audio, and data buffers to the browser’s media engine
-              <abbr title="Encrypted Media Extensions">EME</abbr>
-              (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>)
-              allows playback of encrypted media by introducing Javascript APIs that allow player applications
-              to perform encryption key management with a DRM-specific
-              <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
+          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>). allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
 
-          <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the
-              current landscape of support for these W3C extensions in the open source and proprietary
-              technology arenas.  More specifically, it contains working examples of content creation and
-              encryption of MPEG DASH content along with subsequent playback of that content on supported web
-              browsers.</p>
+          <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the current landscape of support for these W3C extensions in the open source and proprietary technology arenas.  More specifically, it contains working examples of content creation and encryption of MPEG DASH content along with subsequent playback of that content on supported web browsers.</p>
 
           <hr class="col-md-12">
 
-          <h2 id="content-creation">Content Creation</h2>
-          <p>This section describes several open source tools along with scripts we have developed to
-              transcode/transrate, encrypt (with one or more DRMSs), and perform DASH segmentation of existing
-              MP4/H.264 content.</p>
+          <h1 id="content-creation">Content Creation</h1>
+          <p>This section describes several open source tools along with scripts we have developed to transcode/transrate, encrypt (with one or more DRMSs), and perform DASH segmentation of existing MP4/H.264 content.</p>
 
-          <p>For creating content, we have explored options both in the open-source and commercial spaces.
-              While the tools documented below may not represent an exhaustive list of the options available in
-              either space, they provided the shortest path to achieving desired levels of functionality for the
-              project.  We have mostly focused on content that follows the
-              <a href="http://dashif.org/white-papers/">DASH-AVC/264</a> guidelines as established by the
-              <a href="http://www.dashif.org">DASH Industry Forum</a>.</p>
+          <p>For creating content, we have explored options both in the open-source and commercial spaces. While the tools documented below may not represent an exhaustive list of the options available in either space, they provided the shortest path to achieving desired levels of functionality for the project.  We have mostly focused on content that follows the <a href="http://dashif.org/white-papers/">DASH-AVC/264</a> guidelines as established by the <a href="http://www.dashif.org">DASH Industry Forum</a>.</p>
 
-          <p>For our evaluation, we received a functionality-limited version of the commercially available
-              <a href="http://www.fokus.fraunhofer.de/en/fame/projects/current_projects/famium/index.html">FAMIUM</a>
-              toolset from Fraunhofer FOKUS.  Instructions for the Fraunhofer tools can be found in a separate
-              document.  Where applicable, we will augment their provided information with our own here in this
-              document.</p>
+          <p>For our evaluation, we received a functionality-limited version of the commercially available <a href="http://www.fokus.fraunhofer.de/en/fame/projects/current_projects/famium/index.html">FAMIUM</a> toolset from Fraunhofer FOKUS.  Instructions for the Fraunhofer tools can be found in a separate document.  Where applicable, we will augment their provided information with our own here in this document.</p>
 
-          <h3 id="transcoding">Media Transcoding/Transrating</h3>
-          <p>The first step in creating DASH content is to transcode your high-quality source content to
-              AVC/H.264 video and AAC audio in various resolutions and bitrates.</p>
+          <h2 id="transcoding">Media Transcoding/Transrating</h2>
+          <p>The first step in creating DASH content is to transcode your high-quality source content to AVC/H.264 video and AAC audio in various resolutions and bitrates.</p>
 
-          <h4 id="libav">libAV</h4>
-          <p>For open-source offerings, we chose <a href="http://www.libav.org">libAV</a> for transcoding and
-              transrating.  libAV is a fork of the <a href="http://www.ffmpeg.org">ffmpeg</a> project and still
-              maintains some compatibility with ffmpeg as far as command-line structure and usage is involved.
-              Therefore, it may be possible to take these instructions and use them with ffmpeg instead.  All
-              build instructions below have been tested on Ubuntu 13.10 but may work on any Debian-based
-              Linux distribution.</p>
+          <h3 id="libav">libAV</h3>
+          <p>For open-source offerings, we chose <a href="http://www.libav.org">libAV</a> for transcoding and transrating.  libAV is a fork of the <a href="http://www.ffmpeg.org">ffmpeg</a> project and still maintains some compatibility with ffmpeg as far as command-line structure and usage is concerned. Therefore, it may be possible to take these instructions and use them with ffmpeg instead.  All build instructions below have been tested on Ubuntu 13.10 but may work on any Debian-based Linux distribution.</p>
 
           <p>First install the basic components for git and software compilation.</p>
-          <pre><code>sudo apt-get install essential-build git yasm</code></pre>
+          <pre><code class="language-bash">$ sudo apt-get install essential-build git yasm</code></pre>
 
-          <p>For transcoding video to H.264 and AAC-LC you will need to build libav from source, with those
-              components enabled.  First you must install the development libraries for libx264 and
-              libfdk-aac.</p>
-          <pre><code>sudo apt-get install libx264-dev libfdk-aac-dev</code></pre>
+          <p>For transcoding video to H.264 and AAC-LC you will need to build libav from source, with those components enabled.  First you must install the development libraries for libx264 and libfdk-aac.</p>
+          <pre><code class="language-bash">$ sudo apt-get install libx264-dev libfdk-aac-dev</code></pre>
 
           <p>Then get the libav sources from git. Configure, build, and install.</p>
-          <pre><code>$ git clone git://git.libav.org/libav.git
+          <pre><code class="language-bash">$ git clone git://git.libav.org/libav.git
 $ cd libav
 $ ./configure --enable-nonfree --enable-gpl --enable-libx264 --enable-libfdk-aac
 $ make
 $ sudo make install</code></pre>
 
-          <p>Once you have libav built, you have a wide variety of choices for generating your adaptive bitrate
-              streams. You must run <i>avconv</i> once for each adaptive profile.  Below is an example that will
-              generate 2 adaptive streams (AVC High @ L3.1) at 2Mb/s and 3Mb/s:</p>
-          <pre><code>#!/bin/bash
-avconv -i input_720p.mov
+          <p>Once you have libav built, you have a wide variety of choices for generating your adaptive bitrate streams. You must run <span class="code">avconv</span> once for each adaptive profile.  Below is an example that will generate 2 adaptive streams (AVC High @ L3.1) at 2Mb/s and 3Mb/s:</p>
+          <pre><code class="language-bash">$ avconv -i input_720p.mov
           -codec:v libx264 -profile:v high -level 31 -b:v 2000k
           -codec:a libfdk_aac -profile:a aac_low
           abr_720p_h264-2Mb-high-3.1_aac-lc.mp4
-avconv -i input720p.mov "test"
+$ avconv -i input720p.mov
           -codec:v libx264 -profile:v high -level 31 -b:v 3000k
           -codec:a libfdk_aac -profile:a aac_low
           abr_720p_h264-3Mb-high-3.1_aac-lc.mp4</code></pre>
 
-          <p>Here is a more complex example that produces 5 adaptive profiles with varying bitrates, H.264
-              profiles and levels, and scaled resolutions (all with 1 audio bitrate transcoded to AAC-LC):</p>
-          <pre><code>avconv -i input_1080p.mov -vf "scale=w=512:h=288"
+          <p>Here is a more complex example that produces 5 adaptive profiles with varying bitrates, H.264 profiles and levels, and scaled resolutions (all with 1 audio bitrate transcoded to AAC-LC):</p>
+          <pre><code class="language-bash">$ avconv -i input_1080p.mov -vf "scale=w=512:h=288"
           -codec:v libx264 -profile:v main -level 21 -b:v 360k
           -codec:a libfdk_aac -profile:a aac_low
           abr_512x288_h264-360Kb_aac-lc.mp4
-avconv -i input_1080p.mov -vf "scale=w=704:h=396"
+$ avconv -i input_1080p.mov -vf "scale=w=704:h=396"
           -codec:v libx264 -profile:v main -level 30 -b:v 620k
           -codec:a libfdk_aac -profile:a aac_low
           abr_704x396_h264-620Kb_aac-lc.mp4
-avconv -i input_1080p -vf "scale=w=896:h=504"
+$ avconv -i input_1080p -vf "scale=w=896:h=504"
           -codec:v libx264 -profile:v high -level 31 -b:v 1340k
           -codec:a libfdk_aac -profile:a aac_low
           abr_896x504_h264-1340Kb_aac-lc.mp4
-avconv -i input_1080p.mov -vf "scale=w=1280:h=720"
+$ avconv -i input_1080p.mov -vf "scale=w=1280:h=720"
           -codec:v libx264 -profile:v high -level 32 -b:v 2500k
           -codec:a libfdk_aac -profile:a aac_low
           abr_1280x720_h264-2500Kb_aac-lc.mp4
-avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
+$ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
           -codec:v libx264 -profile:v high -level 40 -b:v 4500k
           -codec:a libfdk_aac -profile:a aac_low
           abr_1920x1080_h264-4500Kb_aac-lc.mp4</code></pre>
 
-          <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
-  &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;  &lt;!-- PlayReady SystemID --&gt;
-    &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
+          <h3 id="libav">FAMIUM Transcoder</h3>
+          <p>The FAMIUM Transcoder is Windows application which will transcode/transrate an input file into a set of predefined ABR profiles.  Remember that the version of FAMIUM transcoder provided to us</p>
 
-    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt;     &lt;!-- PlayReady Header Object Size --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Number of records --&gt;
+          <h2 id="encryption">Encryption</h2>
+          <p>To encrypt our ABR content, we use the open-source <a href="http://gpac.wp.mines-telecom.fr/mp4box/">MP4Box</a> tool from the <a href="http://gpac.wp.mines-telecom.fr/">GPAC</a> project (maintained by <a href="http://www.telecom-paristech.fr/">Telecom ParisTech</a>).  All of the examples in this documentation will use the ISO Common Encryption standard for ISO BMFF files (ISO 23009-7).  However, it is possible to do some forms non-CommonEncryption using the MP4Box tool.  We have fixed many bugs in MP4Box over the course of our development, so we recommend that you download one of the <a href="http://gpac.wp.mines-telecom.fr/downloads/gpac-nightly-builds/">nightly builds</a> or build it from <a href="http://sourceforge.net/svn/?group_id=84101">source</a>.</p>
 
-    &lt;!-- First record --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Rights Management record type --&gt;
-    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;     &lt;!-- Record length --&gt;
-    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;           &lt;!-- WRM in external file --&gt;
-  &lt;/DRMInfo&gt;
+          <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>, but we will go over several specific instances of using the tool to encrypt using particular DRMs.</p>
 
-  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x36FD24A3052C8C03" saiSavedBox="senc" &gt;
-    &lt;key KID="0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5" value="0x2539FA84B987416009A7FBBA11B239AB" /&gt;
-  &lt;/CrypTrack&gt;
-&lt;/GPACDRM&gt;
-</code></pre>
-
-          <h3 id="encryption">Encryption</h3>
-          <p>Presently, the CableLabs EME reference tools only support encryption using the ISO Common Encryption standard (ISO 23009</p>
-          To encrypt our ABR content, we use the open-source <a href="http://gpac.wp.mines-telecom.fr/mp4box/">MP4Box</a> tool from the <a href="http://gpac.wp.mines-telecom.fr/">GPAC</a> project (maintained by <a href="http://www.telecom-paristech.fr/">Telocom ParisTech</a>).
+          <h3 id="playready">Microsoft PlayReady</h3>
+          Coming Soon
+          <h3 id="primetime">Adobe PrimeTime</h3>
+          Coming Soon
+          <h3 id="widevine">Google Widevine</h3>
+          Coming Soon
+          <h3 id="clearkey">ClearKey</h3>
+          Coming Soon
 
           <hr class="col-md-12">
 
-          <h2 id="playback">Playback</h2>
-          <p>In this section, our <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a>-based
-              javascript application is described along with important notes related to each browser/platform
-              combination we have tested</p>
+          <h1 id="clientapps">Client Player Applications</h1>
+          <p>A crucial component of the MSE-EME experience is a Javascript application running on the browser that performs the following tasks:</p>
+          <ul>
+            <li>Parsing the DASH manifest (.mpd)</li>
+            <li>Retrieving DASH media files according to detected bandwidth availability</li>
+            <li>Calling MSE APIs to pass media segments into the browser's media engine</li>
+            <li>Calling EME APIs to retrieve licenses and store them in the CDM for decrypting of protected media</li>
+          </ul>
 
-        </div>
+          <h2>dash.js Player</h2>
+          <p>The CableLabs player application is based on the <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a> reference implementation from the DASH Industry Forum</p>
+          Coming Soon
+          <h2>FAMIUM Player</h2>
+          Coming Soon
+          <h2>Microsoft TestDrive Site</h2>
+          Coming Soon
+
+          <hr class="col-md-12">
+
+          <h1 id="browsers">Browsers</h1>
+
+          <h2>Internet Explorer 11 (Windows 8.1)</h2>
+          Coming Soon
+          <h2>Chrome</h2>
+          Coming Soon
+          <h2>FAMIUM Browser</h2>
+          Coming Soon
+          <h2>Firefox</h2>
+          Coming Soon
+
+          <hr class="col-md-12">
+
+          <h1 id="servers">License Servers</h1>
+
+          <h2>Microsoft PlayReady Test Server</h2>
+          Coming Soon
+
+          <h2>Widevine CableLabs Test Server</h2>
+          Coming Soon
+
+          <h2>Adobe Test Server</h2>
+          Coming Soon
+
+          <h2>CableLabs ClearKey Test Server</h2>
+
+       </div>
       </div>
     </div>
 
