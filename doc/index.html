@@ -55,14 +55,14 @@
         <div class="col-md-9">
           <h1 id="sec0">Overview</h1>
 
-          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>). allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
+          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>) allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
 
           <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the current landscape of support for these W3C extensions in the open source and proprietary technology arenas.  More specifically, it contains working examples of content creation and encryption of MPEG DASH content along with subsequent playback of that content on supported web browsers.</p>
 
           <hr class="col-md-12">
 
           <h1 id="content-creation">Content Creation</h1>
-          <p>This section describes several open source tools along with scripts we have developed to transcode/transrate, encrypt (with one or more DRMSs), and perform DASH segmentation of existing MP4/H.264 content.</p>
+          <p>This section describes several open source tools along with scripts we have developed to transcode/transrate, encrypt (with one or more DRMs), and perform DASH segmentation/packaging of existing MP4/H.264 content.</p>
 
           <p>For creating content, we have explored options both in the open-source and commercial spaces. While the tools documented below may not represent an exhaustive list of the options available in either space, they provided the shortest path to achieving desired levels of functionality for the project.  We have mostly focused on content that follows the <a href="http://dashif.org/white-papers/">DASH-AVC/264</a> guidelines as established by the <a href="http://www.dashif.org">DASH Industry Forum</a>.</p>
 
@@ -120,21 +120,303 @@ $ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
           abr_1920x1080_h264-4500Kb_aac-lc.mp4</code></pre>
 
           <h3 id="libav">FAMIUM Transcoder</h3>
-          <p>The FAMIUM Transcoder is Windows application which will transcode/transrate an input file into a set of predefined ABR profiles.  Remember that the version of FAMIUM transcoder provided to us</p>
+
+          <p>The FAMIUM Transcoder is a Java application which will transcode/transrate an input file into a set of predefined ABR profiles.  Documentation provided to us by the FAMIUM team can be found <a href="resources/famium/FAMIUM%20DASH%20Transcoder%20Toolset.pdf">here</a>.
+
+          <div class="alert alert-warning">The version of FAMIUM transcoder provided to CableLabs is feature limited and does not represent the full capabilities of the commercial tool you can license from Fraunhofer.  However, the FAMIUM team has provided us with a <a href="resources/famium/2014-03-14_FamiumRoad.pdf">roadmap</a> of current and planned features for their tools.</div>
+
+          <p>The Java application extracts a Windows version of FFMpeg for performing the actual transcode.  Therefore, you must run the FAMIUM transcode tool on a Windows platform</p>
+
+          <pre><code class="scrollable-code">$ java -jar FAMIUMTranscoder.jar big-buck-bunny-720p-h264_trailer_stereo
+### FOKUS DASH Transcoder Tool ###
+
+arg[0]: big-buck-bunny-720p-h264_trailer_stereo.mp4
+
+Extracting FFmpeg for Windows shipped with this Transcoder build.
+Extracting Font for Windows shipped with this Transcoder build.
+Now transcoding:
+C:\test\fraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\video\512000\512000.mp4
+Now transcoding:
+C:\test\fraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\video\1024000\1024000.mp4
+Now transcoding:
+C:\test\fraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\audio\128000\128000.mp4
+1024000.mp4: ffmpeg version N-56930-gee3d03b Copyright (c) 2000-2013 the FFmpeg developers
+1024000.mp4:   built on Oct  6 2013 18:02:08 with gcc 4.8.1 (GCC)
+1024000.mp4:   configuration: --enable-gpl --enable-version3 --disable-w32threads --enable-avisynth --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libcaca --enable-libfreetype --enable-libgsm --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libxavs --enable-libxvid --enable-zlib
+1024000.mp4:   libavutil      52. 46.100 / 52. 46.100
+1024000.mp4:   libavcodec     55. 35.100 / 55. 35.100
+1024000.mp4:   libavformat    55. 19.100 / 55. 19.100
+1024000.mp4:   libavdevice    55.  3.100 / 55.  3.100
+1024000.mp4:   libavfilter     3. 88.101 /  3. 88.101
+1024000.mp4:   libswscale      2.  5.101 /  2.  5.101
+1024000.mp4:   libswresample   0. 17.103 /  0. 17.103
+1024000.mp4:   libpostproc    52.  3.100 / 52.  3.100
+128000.mp4: ffmpeg version N-56930-gee3d03b Copyright (c) 2000-2013 the FFmpeg developers
+512000.mp4: ffmpeg version N-56930-gee3d03b Copyright (c) 2000-2013 the FFmpeg developers
+128000.mp4:   built on Oct  6 2013 18:02:08 with gcc 4.8.1 (GCC)
+512000.mp4:   built on Oct  6 2013 18:02:08 with gcc 4.8.1 (GCC)
+128000.mp4:   configuration: --enable-gpl --enable-version3 --disable-w32threads --enable-avisynth --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libcaca --enable-libfreetype --enable-libgsm --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libxavs --enable-libxvid --enable-zlib
+128000.mp4:   libavutil      52. 46.100 / 52. 46.100
+128000.mp4:   libavcodec     55. 35.100 / 55. 35.100
+512000.mp4:   configuration: --enable-gpl --enable-version3 --disable-w32threads --enable-avisynth --enable-bzlib --enable-fontconfig --enable-frei0r --enable-gnutls --enable-iconv --enable-libass --enable-libbluray --enable-libcaca --enable-libfreetype --enable-libgsm --enable-libilbc --enable-libmodplug --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-librtmp --enable-libschroedinger --enable-libsoxr --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvo-aacenc --enable-libvo-amrwbenc --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libx264 --enable-libxavs --enable-libxvid --enable-zlib
+128000.mp4:   libavformat    55. 19.100 / 55. 19.100
+512000.mp4:   libavutil      52. 46.100 / 52. 46.100
+128000.mp4:   libavdevice    55.  3.100 / 55.  3.100
+512000.mp4:   libavcodec     55. 35.100 / 55. 35.100
+128000.mp4:   libavfilter     3. 88.101 /  3. 88.101
+512000.mp4:   libavformat    55. 19.100 / 55. 19.100
+128000.mp4:   libswscale      2.  5.101 /  2.  5.101
+512000.mp4:   libavdevice    55.  3.100 / 55.  3.100
+128000.mp4:   libswresample   0. 17.103 /  0. 17.103
+512000.mp4:   libavfilter     3. 88.101 /  3. 88.101
+128000.mp4:   libpostproc    52.  3.100 / 52.  3.100
+512000.mp4:   libswscale      2.  5.101 /  2.  5.101
+512000.mp4:   libswresample   0. 17.103 /  0. 17.103
+512000.mp4:   libpostproc    52.  3.100 / 52.  3.100
+1024000.mp4: Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\testfraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\big-buck-bunny-720p-h264_trailer_stereo.mp4':
+1024000.mp4:   Metadata:
+1024000.mp4:     major_brand     : mp42
+1024000.mp4:     minor_version   : 0
+1024000.mp4:     compatible_brands: mp42isomavc1
+1024000.mp4:     creation_time   : 2014-03-20 18:40:23
+1024000.mp4:     encoder         : HandBrake 0.9.9 2013052900
+1024000.mp4:   Duration: 00:00:33.02, start: 0.000000, bitrate: 1840 kb/s
+1024000.mp4:     Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1280x720 [SAR 1:1 DAR 16:9], 1708 kb/s, 25 fps, 25 tbr, 90k tbn, 180k tbc (default)
+1024000.mp4:     Metadata:
+1024000.mp4:       creation_time   : 2014-03-20 18:40:23
+1024000.mp4:     Stream #0:1(eng): Audio: aac (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 157 kb/s (default)
+1024000.mp4:     Metadata:
+1024000.mp4:       creation_time   : 2014-03-20 18:40:23
+128000.mp4: Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\testfraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\big-buck-bunny-720p-h264_trailer_stereo.mp4':
+512000.mp4: Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\testfraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\big-buck-bunny-720p-h264_trailer_stereo.mp4':
+128000.mp4:   Metadata:
+512000.mp4:   Metadata:
+128000.mp4:     major_brand     : mp42
+512000.mp4:     major_brand     : mp42
+128000.mp4:     minor_version   : 0
+512000.mp4:     minor_version   : 0
+128000.mp4:     compatible_brands: mp42isomavc1
+512000.mp4:     compatible_brands: mp42isomavc1
+128000.mp4:     creation_time   : 2014-03-20 18:40:23
+512000.mp4:     creation_time   : 2014-03-20 18:40:23
+128000.mp4:     encoder         : HandBrake 0.9.9 2013052900
+512000.mp4:     encoder         : HandBrake 0.9.9 2013052900
+128000.mp4:   Duration: 00:00:33.02, start: 0.000000, bitrate: 1840 kb/s
+512000.mp4:   Duration: 00:00:33.02, start: 0.000000, bitrate: 1840 kb/s
+128000.mp4:     Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1280x720 [SAR 1:1 DAR 16:9], 1708 kb/s, 25 fps, 25 tbr, 90k tbn, 180k tbc (default)
+512000.mp4:     Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 1280x720 [SAR 1:1 DAR 16:9], 1708 kb/s, 25 fps, 25 tbr, 90k tbn, 180k tbc (default)
+128000.mp4:     Metadata:
+512000.mp4:     Metadata:
+128000.mp4:       creation_time   : 2014-03-20 18:40:23
+512000.mp4:       creation_time   : 2014-03-20 18:40:23
+128000.mp4:     Stream #0:1(eng): Audio: aac (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 157 kb/s (default)
+512000.mp4:     Stream #0:1(eng): Audio: aac (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 157 kb/s (default)
+128000.mp4:     Metadata:
+512000.mp4:     Metadata:
+128000.mp4:       creation_time   : 2014-03-20 18:40:23
+512000.mp4:       creation_time   : 2014-03-20 18:40:23
+128000.mp4: Output #0, mp4, to 'C:\testfraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\audio\128000\128000.mp4':
+128000.mp4:   Metadata:
+128000.mp4:     major_brand     : mp42
+128000.mp4:     minor_version   : 0
+128000.mp4:     compatible_brands: mp42isomavc1
+128000.mp4:     encoder         : Lavf55.19.100
+128000.mp4:     Stream #0:0(eng): Audio: aac (libvo_aacenc) ([64][0][0][0] / 0x0040), 48000 Hz, stereo, s16, 128 kb/s (default)
+128000.mp4:     Metadata:
+128000.mp4:       creation_time   : 2014-03-20 18:40:23
+128000.mp4: Stream mapping:
+128000.mp4:   Stream #0:1 -> #0:0 (aac -> libvo_aacenc)
+128000.mp4: Press [q] to stop, [?] for help
+1024000.mp4: [libx264 @ 04030060] using SAR=1/1
+1024000.mp4: [libx264 @ 04030060] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2
+512000.mp4: [libx264 @ 0456d3c0] using SAR=1/1
+1024000.mp4: [libx264 @ 04030060] profile Main, level 4.1
+1024000.mp4: [libx264 @ 04030060] 264 - core 138 r2358 9e941d1 - H.264/MPEG-4 AVC codec - Copyleft 2003-2013 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x1:0x111 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=12 lookahead_threads=2 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=abr mbtree=1 bitrate=1024 ratetol=1.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+512000.mp4: [libx264 @ 0456d3c0] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2
+1024000.mp4: Output #0, mp4, to 'C:\testfraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\video\1024000\1024000.mp4':
+1024000.mp4:   Metadata:
+1024000.mp4:     major_brand     : mp42
+1024000.mp4:     minor_version   : 0
+1024000.mp4:     compatible_brands: mp42isomavc1
+1024000.mp4:     encoder         : Lavf55.19.100
+1024000.mp4:     Stream #0:0(und): Video: h264 (libx264) ([33][0][0][0] / 0x0021), yuv420p, 1280x720 [SAR 1:1 DAR 16:9], q=-1--1, 1024 kb/s, 12800 tbn, 25 tbc (default)
+1024000.mp4:     Metadata:
+1024000.mp4:       creation_time   : 2014-03-20 18:40:23
+1024000.mp4: Stream mapping:
+1024000.mp4:   Stream #0:0 -> #0:0 (h264 -> libx264)
+1024000.mp4: Press [q] to stop, [?] for help
+512000.mp4: [libx264 @ 0456d3c0] profile Main, level 4.1
+512000.mp4: [libx264 @ 0456d3c0] 264 - core 138 r2358 9e941d1 - H.264/MPEG-4 AVC codec - Copyleft 2003-2013 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x1:0x111 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=12 lookahead_threads=2 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=abr mbtree=1 bitrate=512 ratetol=1.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+512000.mp4: Output #0, mp4, to 'C:\test/fraunhofer\03-14-2014-cablelabs-deliverable\FAMIUMTranscoderTools\plain\video\512000\512000.mp4':
+512000.mp4:   Metadata:
+512000.mp4:     major_brand     : mp42
+512000.mp4:     minor_version   : 0
+512000.mp4:     compatible_brands: mp42isomavc1
+512000.mp4:     encoder         : Lavf55.19.100
+512000.mp4:     Stream #0:0(und): Video: h264 (libx264) ([33][0][0][0] / 0x0021), yuv420p, 1280x720 [SAR 1:1 DAR 16:9], q=-1--1, 512 kb/s, 12800 tbn, 25 tbc (default)
+512000.mp4:     Metadata:
+512000.mp4:       creation_time   : 2014-03-20 18:40:23
+512000.mp4: Stream mapping:
+512000.mp4:   Stream #0:0 -> #0:0 (h264 -> libx264)
+512000.mp4: Press [q] to stop, [?] for help
+128000.mp4: size=     281kB time=00:00:17.97 bitrate= 128.2kbits/s
+1024000.mp4: frame=   63 fps=0.0 q=24.0 size=       8kB time=00:00:00.20 bitrate= 328.7kbits/s
+512000.mp4: frame=   64 fps=0.0 q=31.0 size=       5kB time=00:00:00.24 bitrate= 184.5kbits/s
+128000.mp4: size=     511kB time=00:00:32.67 bitrate= 128.1kbits/s
+128000.mp4: size=     523kB time=00:00:33.03 bitrate= 129.7kbits/s
+128000.mp4:
+128000.mp4: video:0kB audio:516kB subtitle:0 global headers:0kB muxing overhead 1.313343%
+Transcoding successful:
+ file: 128000.mp4
+ code: 0
+>> time: 2 seconds
+1024000.mp4: frame=   97 fps= 96 q=15.0 size=      88kB time=00:00:01.56 bitrate= 462.1kbits/s
+512000.mp4: frame=   97 fps= 96 q=23.0 size=      45kB time=00:00:01.56 bitrate= 237.6kbits/s
+1024000.mp4: frame=  131 fps= 86 q=14.0 size=     244kB time=00:00:02.92 bitrate= 684.8kbits/s
+512000.mp4: frame=  143 fps= 89 q=20.0 size=     130kB time=00:00:03.40 bitrate= 312.7kbits/s
+1024000.mp4: frame=  146 fps= 72 q=11.0 size=     365kB time=00:00:03.52 bitrate= 850.6kbits/s
+512000.mp4: frame=  147 fps= 64 q=22.0 size=     216kB time=00:00:03.56 bitrate= 497.5kbits/s
+1024000.mp4: frame=  150 fps= 55 q=18.0 size=     696kB time=00:00:03.68 bitrate=1549.6kbits/s
+512000.mp4: frame=  156 fps= 56 q=34.0 size=     588kB time=00:00:03.92 bitrate=1229.6kbits/s
+1024000.mp4: frame=  161 fps= 50 q=30.0 size=    1879kB time=00:00:04.12 bitrate=3736.9kbits/s
+512000.mp4: frame=  172 fps= 52 q=39.0 size=     980kB time=00:00:04.56 bitrate=1759.7kbits/s
+1024000.mp4: frame=  175 fps= 47 q=34.0 size=    2084kB time=00:00:04.68 bitrate=3647.6kbits/s
+512000.mp4: frame=  195 fps= 48 q=40.0 size=    1023kB time=00:00:05.48 bitrate=1529.0kbits/s
+1024000.mp4: frame=  187 fps= 44 q=34.0 size=    2141kB time=00:00:05.16 bitrate=3399.3kbits/s
+512000.mp4: frame=  220 fps= 47 q=42.0 size=    1139kB time=00:00:06.48 bitrate=1440.1kbits/s
+1024000.mp4: frame=  199 fps= 42 q=35.0 size=    2180kB time=00:00:05.64 bitrate=3166.4kbits/s
+1024000.mp4: frame=  220 fps= 42 q=36.0 size=    2377kB time=00:00:06.48 bitrate=3004.7kbits/s
+512000.mp4: frame=  245 fps= 46 q=42.0 size=    1172kB time=00:00:07.48 bitrate=1283.2kbits/s
+512000.mp4: frame=  302 fps= 52 q=41.0 size=    1225kB time=00:00:09.76 bitrate=1028.3kbits/s
+1024000.mp4: frame=  235 fps= 40 q=36.0 size=    2433kB time=00:00:07.08 bitrate=2814.8kbits/s
+1024000.mp4: frame=  287 fps= 45 q=35.0 size=    2526kB time=00:00:09.16 bitrate=2259.1kbits/s
+512000.mp4: frame=  338 fps= 53 q=41.0 size=    1276kB time=00:00:11.20 bitrate= 933.1kbits/s
+1024000.mp4: frame=  326 fps= 48 q=35.0 size=    2620kB time=00:00:10.72 bitrate=2002.1kbits/s
+512000.mp4: frame=  382 fps= 55 q=40.0 size=    1290kB time=00:00:12.96 bitrate= 815.6kbits/s
+512000.mp4: frame=  422 fps= 57 q=41.0 size=    1428kB time=00:00:14.56 bitrate= 803.5kbits/s
+1024000.mp4: frame=  345 fps= 46 q=35.0 size=    2629kB time=00:00:11.48 bitrate=1875.7kbits/s
+512000.mp4: frame=  447 fps= 57 q=41.0 size=    1489kB time=00:00:15.56 bitrate= 783.7kbits/s
+1024000.mp4: frame=  390 fps= 49 q=34.0 size=    2728kB time=00:00:13.28 bitrate=1683.0kbits/s
+1024000.mp4: frame=  422 fps= 50 q=35.0 size=    2910kB time=00:00:14.56 bitrate=1637.2kbits/s
+512000.mp4: frame=  473 fps= 55 q=41.0 size=    1524kB time=00:00:16.60 bitrate= 751.8kbits/s
+1024000.mp4: frame=  449 fps= 50 q=35.0 size=    3025kB time=00:00:15.64 bitrate=1584.7kbits/s
+512000.mp4: frame=  511 fps= 57 q=40.0 size=    1535kB time=00:00:18.12 bitrate= 694.1kbits/s
+512000.mp4: frame=  537 fps= 56 q=39.0 size=    1585kB time=00:00:19.16 bitrate= 677.5kbits/s
+1024000.mp4: frame=  473 fps= 49 q=35.0 size=    3085kB time=00:00:16.60 bitrate=1522.4kbits/s
+512000.mp4: frame=  555 fps= 55 q=39.0 size=    1625kB time=00:00:19.88 bitrate= 669.6kbits/s
+1024000.mp4: frame=  512 fps= 50 q=33.0 size=    3103kB time=00:00:18.16 bitrate=1399.6kbits/s
+512000.mp4: frame=  572 fps= 54 q=40.0 size=    1715kB time=00:00:20.56 bitrate= 683.1kbits/s
+1024000.mp4: frame=  533 fps= 50 q=33.0 size=    3145kB time=00:00:19.00 bitrate=1356.1kbits/s
+512000.mp4: frame=  585 fps= 53 q=41.0 size=    1765kB time=00:00:21.08 bitrate= 685.7kbits/s
+1024000.mp4: frame=  544 fps= 48 q=33.0 size=    3219kB time=00:00:19.44 bitrate=1356.5kbits/s
+512000.mp4: frame=  596 fps= 51 q=38.0 size=    1782kB time=00:00:21.52 bitrate= 678.5kbits/s
+1024000.mp4: frame=  554 fps= 47 q=33.0 size=    3265kB time=00:00:19.84 bitrate=1348.3kbits/s
+512000.mp4: frame=  611 fps= 50 q=41.0 size=    1855kB time=00:00:22.12 bitrate= 687.2kbits/s
+1024000.mp4: frame=  574 fps= 47 q=34.0 size=    3459kB time=00:00:20.64 bitrate=1372.7kbits/s
+512000.mp4: frame=  628 fps= 49 q=42.0 size=    1922kB time=00:00:22.80 bitrate= 690.5kbits/s
+1024000.mp4: frame=  586 fps= 46 q=34.0 size=    3558kB time=00:00:21.12 bitrate=1380.0kbits/s
+512000.mp4: frame=  656 fps= 50 q=41.0 size=    1938kB time=00:00:23.92 bitrate= 663.9kbits/s
+1024000.mp4: frame=  601 fps= 45 q=35.0 size=    3607kB time=00:00:21.72 bitrate=1360.3kbits/s
+512000.mp4: frame=  691 fps= 50 q=41.0 size=    2012kB time=00:00:25.32 bitrate= 651.0kbits/s
+1024000.mp4: frame=  611 fps= 43 q=35.0 size=    3734kB time=00:00:22.12 bitrate=1383.0kbits/s
+512000.mp4: frame=  715 fps= 50 q=41.0 size=    2072kB time=00:00:26.28 bitrate= 645.8kbits/s
+1024000.mp4: frame=  624 fps= 43 q=36.0 size=    3845kB time=00:00:22.64 bitrate=1391.2kbits/s
+512000.mp4: frame=  744 fps= 50 q=41.0 size=    2129kB time=00:00:27.44 bitrate= 635.5kbits/s
+1024000.mp4: frame=  648 fps= 43 q=36.0 size=    3894kB time=00:00:23.60 bitrate=1351.8kbits/s
+512000.mp4: frame=  794 fps= 51 q=40.0 size=    2165kB time=00:00:29.44 bitrate= 602.6kbits/s
+1024000.mp4: frame=  686 fps= 44 q=35.0 size=    3988kB time=00:00:25.12 bitrate=1300.4kbits/s
+1024000.mp4: frame=  706 fps= 44 q=35.0 size=    4094kB time=00:00:25.92 bitrate=1293.9kbits/s
+512000.mp4: frame=  811 fps= 49 q=-1.0 Lsize=    2277kB time=00:00:32.36 bitrate= 576.4kbits/s
+512000.mp4:
+512000.mp4: video:2267kB audio:0kB subtitle:0 global headers:0kB muxing overhead 0.428015%
+512000.mp4: [libx264 @ 0456d3c0] frame I:23    Avg QP:25.74  size: 32065
+512000.mp4: [libx264 @ 0456d3c0] frame P:363   Avg QP:29.68  size:  3808
+512000.mp4: [libx264 @ 0456d3c0] frame B:425   Avg QP:33.39  size:   473
+512000.mp4: [libx264 @ 0456d3c0] consecutive B-frames: 15.3% 37.7% 20.3% 26.6%
+512000.mp4: [libx264 @ 0456d3c0] mb I  I16..4: 65.9%  0.0% 34.1%
+512000.mp4: [libx264 @ 0456d3c0] mb P  I16..4: 12.2%  0.0%  1.6%  P16..4: 12.7%  1.9%  0.9%  0.0%  0.0%    skip:70.6%
+512000.mp4: [libx264 @ 0456d3c0] mb B  I16..4:  0.1%  0.0%  0.0%  B16..8:  8.0%  0.2%  0.0%  direct: 0.3%  skip:91.3%  L0:41.1% L1:56.1% BI: 2.8%
+512000.mp4: [libx264 @ 0456d3c0] final ratefactor: 31.08
+512000.mp4: [libx264 @ 0456d3c0] coded y,uvDC,uvAC intra: 15.5% 28.4% 9.3% inter: 1.4% 2.8% 0.4%
+512000.mp4: [libx264 @ 0456d3c0] i16 v,h,dc,p: 57% 22% 11% 10%
+512000.mp4: [libx264 @ 0456d3c0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 29% 18% 21%  6%  6%  6%  5%  6%  4%
+512000.mp4: [libx264 @ 0456d3c0] i8c dc,h,v,p: 75% 14% 10%  2%
+512000.mp4: [libx264 @ 0456d3c0] Weighted P-Frames: Y:25.6% UV:23.1%
+512000.mp4: [libx264 @ 0456d3c0] ref P L0: 68.5% 14.8% 12.4%  4.2%  0.1%
+512000.mp4: [libx264 @ 0456d3c0] ref B L0: 86.3% 12.4%  1.3%
+512000.mp4: [libx264 @ 0456d3c0] ref B L1: 96.0%  4.0%
+512000.mp4: [libx264 @ 0456d3c0] kb/s:572.36
+1024000.mp4: frame=  741 fps= 44 q=35.0 size=    4231kB time=00:00:27.32 bitrate=1268.8kbits/s
+1024000.mp4: frame=  794 fps= 46 q=34.0 size=    4297kB time=00:00:29.44 bitrate=1195.8kbits/s
+1024000.mp4: frame=  811 fps= 46 q=-1.0 Lsize=    4485kB time=00:00:32.36 bitrate=1135.3kbits/s
+1024000.mp4:
+1024000.mp4: video:4475kB audio:0kB subtitle:0 global headers:0kB muxing overhead 0.217559%
+1024000.mp4: [libx264 @ 04030060] frame I:23    Avg QP:19.85  size: 56862
+1024000.mp4: [libx264 @ 04030060] frame P:363   Avg QP:23.55  size:  7829
+1024000.mp4: [libx264 @ 04030060] frame B:425   Avg QP:27.59  size:  1016
+1024000.mp4: [libx264 @ 04030060] consecutive B-frames: 15.3% 37.7% 20.3% 26.6%
+1024000.mp4: [libx264 @ 04030060] mb I  I16..4: 56.5%  0.0% 43.5%
+1024000.mp4: [libx264 @ 04030060] mb P  I16..4: 13.1%  0.0%  3.0%  P16..4: 14.8%  3.5%  1.8%  0.0%  0.0%    skip:63.9%
+1024000.mp4: [libx264 @ 04030060] mb B  I16..4:  0.2%  0.0%  0.1%  B16..8: 10.3%  0.6%  0.1%  direct: 0.9%  skip:87.8%  L0:41.7% L1:53.5% BI: 4.8%
+1024000.mp4: [libx264 @ 04030060] final ratefactor: 24.58
+1024000.mp4: [libx264 @ 04030060] coded y,uvDC,uvAC intra: 22.0% 35.8% 14.4% inter: 3.0% 4.9% 1.1%
+1024000.mp4: [libx264 @ 04030060] i16 v,h,dc,p: 56% 22% 11% 12%
+1024000.mp4: [libx264 @ 04030060] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 27% 18% 21%  5%  6%  7%  5%  6%  4%
+1024000.mp4: [libx264 @ 04030060] i8c dc,h,v,p: 67% 17% 13%  3%
+1024000.mp4: [libx264 @ 04030060] Weighted P-Frames: Y:25.6% UV:23.1%
+1024000.mp4: [libx264 @ 04030060] ref P L0: 68.5% 15.3% 11.6%  4.5%  0.2%
+1024000.mp4: [libx264 @ 04030060] ref B L0: 84.5% 14.0%  1.5%
+1024000.mp4: [libx264 @ 04030060] ref B L1: 94.1%  5.9%
+1024000.mp4: [libx264 @ 04030060] kb/s:1129.83
+Transcoding successful:
+ file: 512000.mp4
+ code: 0
+Transcoding successful:
+>> time: 19 seconds
+ file: 1024000.mp4
+ code: 0
+>> time: 19 seconds
+</code></pre>
+
+          <div class="alert alert-warning">Our restricted version of the FAMIUM transcoder does not support anything other than 2-channel audio.  So, if you are trying to test the tool with your own content, you might have to down-mix your audio to stereo first.</div>
+
+          <p>The ouput of the FAMIUM tool is placed in a directory called 'plain'.  In that directory you will find separate directories for audio and video streams (the FAMIUM transcoder demuxes your input stream to separate the video and audio).  Within the audio and video directories are subdirectories containing the individual bitrate profiles for each stream.</p>
+
+          <div class="alert alert-warning">Do not modify the output directory structure or filenames produced by the FAMIUM transcoder tool.  The FAMIUM DASH segmenter/packager relies on this exact configuration to do its work.</div>
 
           <h2 id="encryption">Encryption</h2>
-          <p>To encrypt our ABR content, we use the open-source <a href="http://gpac.wp.mines-telecom.fr/mp4box/">MP4Box</a> tool from the <a href="http://gpac.wp.mines-telecom.fr/">GPAC</a> project (maintained by <a href="http://www.telecom-paristech.fr/">Telecom ParisTech</a>).  All of the examples in this documentation will use the ISO Common Encryption standard for ISO BMFF files (ISO 23009-7).  However, it is possible to do some forms non-CommonEncryption using the MP4Box tool.  We have fixed many bugs in MP4Box over the course of our development, so we recommend that you download one of the <a href="http://gpac.wp.mines-telecom.fr/downloads/gpac-nightly-builds/">nightly builds</a> or build it from <a href="http://sourceforge.net/svn/?group_id=84101">source</a>.</p>
+          <p>All of the examples in this documentation will use the ISO Common Encryption standard for ISO BMFF files (ISO 23009-7). The Common Encryption specification defines a single set of encryption parameters for all content to make the decryption process more simple and consistent across players.  The following restrictions are enforced:</p>
+          <ul>
+            <li>AES 128-bit block encryption</li>
+            <li>CBC (Cipher Block Chaining) or CTR (Counter) Block Modes</li>
+            <li>64-bit or 128-bit Initialization Vectors</li>
+            <li>128-bit Key IDs</li>
+          </ul>
+          <p>In addition to the required encryption standards, the specification defines several new boxes that describe how encrypted content is to be represented in ISO BMFF containers.  These new boxes indicate which tracks within the media have encrypted samples and which samples within that track are actually encrypted.  Each set of encrypted samples is assoicated with a encryption key ID.  It is possible to have alternating sequences of encrypted and unencrypted samples.  It is also possible to have multiple encryption key IDs associated with various samples throughout the media.  However, each contiguous set of encrypted samples may only be encrypted by a single key ID.</p>
+          <p>The box that contains DRM-specific information is called the 'pssh' (Protection System Specific Header).  This box contains all the information that the CDM and/or player application will need to retrieve decryption keys from the DRM-specific license server.  The following sections desribe how to use our tools to encrypt the content and build and insert one or more DRM-specific 'pssh' boxes.</p>
 
+          <p>To encrypt our ABR content, we use the open-source <a href="http://gpac.wp.mines-telecom.fr/mp4box/">MP4Box</a> tool from the <a href="http://gpac.wp.mines-telecom.fr/">GPAC</a> project (maintained by <a href="http://www.telecom-paristech.fr/">Telecom ParisTech</a>).  Please note that it is possible to do some forms of non-CommonEncryption using the MP4Box tool, but it will not be covered in this documentation.  We have fixed many bugs in MP4Box over the course of our development, so we recommend that you download one of the <a href="http://gpac.wp.mines-telecom.fr/downloads/gpac-nightly-builds/">nightly builds</a> or build it from <a href="http://sourceforge.net/svn/?group_id=84101">source</a>.</p>
           <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>, but we will go over several specific instances of using the tool to encrypt using particular DRMs.</p>
 
           <h3 id="playready">Microsoft PlayReady</h3>
-          Coming Soon
+
+          <p></p>
+
           <h3 id="primetime">Adobe PrimeTime</h3>
+
           Coming Soon
+
           <h3 id="widevine">Google Widevine</h3>
+
           Coming Soon
+
           <h3 id="clearkey">ClearKey</h3>
+
           Coming Soon
+
+          <h3 id="clearkey">Common Encryption Multi-DRM</h3>
+
+          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content one while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back the disparate platforms that support those systems.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
