@@ -400,7 +400,140 @@ Transcoding successful:
 
           <h3 id="playready">Microsoft PlayReady</h3>
 
-          <p></p>
+          <p>Microsoft provides <a href="http://www.microsoft.com/playready/documents/">several documents</a> that describe the PlayReady DRM system.  These documents detail the DRM metadata that is inserted in content files along with special instructions for doing PlayReady content protection in MPEG-DASH. The first step in creating PlayReady encrypted content is to generate your encryption keys.</p>
+
+          <h4 id="playready">Encryption Key Generation</h4>
+
+          <p>Microsoft has made a <a href="http://playready.directtaps.net/pr/doc/customrights/">test license server</a> available for developers who wish to test their implementations.  This server can accept query string arguments that apply different attributes to the returned license based on the desired content rights.  Since we can not store our own encryption keys in the test license server, we need a way to ensure that the keys we use to encrypt our content will be the same keys that are returned by the license server upon playback.  Microsoft has defined an algorithm (detailed at the end of <a href="http://download.microsoft.com/download/2/0/2/202E5BD8-36C6-4DB8-9178-12472F8B119E/PlayReady%20Header%20Object%204-15-2013.docx">this document</a> in the section titled <b>Content Key Algorithm</b>) that developers can use to generate their own keys based on a unique <i>key seed</i> assigned to the server and a user-defined <i>key ID</i>.  CableLabs has created a Java application that will generate encryption keys according to this algorithm along with a few other crucial pieces of data required for the encyption process.  The tool is located in <span class="code">mp4/playready/keygen/PlayReadyKeygen.jar</span> in the software artifacts repository.</p>
+
+          <pre><code>$ java -jar PlayReadyKeygen.jar
+usage:  PlayReadyKeygen &lt;key_id&gt; &lt;key_seed&gt;
+   &lt;key_id&gt; is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+     where 'x' is any hexadecimal digit in the range [0-9a-f] (case insensitive)
+   &lt;key_seed&gt; is a 30-byte key seed value in Base64 notation</code></pre>
+
+          <p>Here is an actual example showing the output from the tool using the key seed value from the Microsoft test server.  We'll discuss how to use all of these values to encrypt your own content in the next section.</p>
+
+          <pre><code>java -jar PlayReadyKeygen.jar a1b1c1d1-a2b2-a3b3-a4b4-a5b5c5d5e5f5 XVBovsmzhP9gRIZxWfFta3VVRPzVEWmJsazEJ46I
+===============================================
+Content key ID =
+  0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5
+  0xD1C1B1A1B2A2B3A3A4B4A5B5C5D5E5F5 (little endian)
+  0cGxobKis6OktKW1xdXl9Q== (Base64, little endian)
+Content key =
+  0x2539FA84B987416009A7FBBA11B239AB
+  JTn6hLmHQWAJp/u6EbI5qw== (Base64)
+Checksum =
+  0x6DBA75394ADDB4C2
+  bbp1OUrdtMI= (Base64)
+IV =
+  0x7F068B465B6CF53A
+  fwaLRlts9To= (Base64)
+===============================================</code></pre>
+
+          <h4>PlayReady Header Object</h4>
+
+          <p>The data contents of the 'pssh' box as described by the <a href="http://download.microsoft.com/download/2/0/2/202E5BD8-36C6-4DB8-9178-12472F8B119E/PlayReady%20Header%20Object%204-15-2013.docx">Microsoft documentation</a> is the PlayReady Header Object (PRO).  The PRO is a list of PlayReady <em>records</em>.  Records can be of various types, but the only one we will be concerned with is the <b>rights management header</b> (type 0x0001).  The rights managment header is a UTF-16 little-endian encoded XML document designated by the top-level Windows Rights Management Header element (WRMHEADER).  Here is the rights management header used in our example tools:</p>
+
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/playready/playready_wrm_v4000.xml</div>
+            <div class="panel-body">
+              <pre><code>&lt;WRMHEADER xmlns="http://schemas.microsoft.com/DRM/2007/03/PlayReadyHeader" version="4.0.0.0"&gt;
+  &lt;DATA&gt;
+    &lt;PROTECTINFO&gt;
+      &lt;KEYLEN&gt;16&lt;/KEYLEN&gt;
+      &lt;ALGID&gt;AESCTR&lt;/ALGID&gt;
+    &lt;/PROTECTINFO&gt;
+    &lt;KID&gt;AAAAEAAQABAQABAAAAAAAQ==&lt;/KID&gt;
+    &lt;CHECKSUM&gt;5TzIYQ2hrOY=&lt;/CHECKSUM&gt;
+    &lt;LA_URL&gt;http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&amp;amp;UseSimpleNonPersistentLicense=1&lt;/LA_URL&gt;
+  &lt;/DATA&gt;
+&lt;/WRMHEADER&gt;
+              </code></pre>
+            </div>
+          </div>
+
+          <p>The rights management header in this example conforms to version 4.0.0.0.  The Microsoft documentation also describes a version 4.1.0.0 rights management header that contains the same data, but it a little more compact.  We haven't been able to get content to play properly when using the 4.1.0.0 header as of the writing of this document.</p>
+
+          <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value is the <span class="code">KID</span> element.  This is the base64-encoded key ID that we associated with our encryption key.  The key ID must be in little-endian format before being encoded.  However, this is not your typical little-endian; <b><em>THE FIRST 4 BYTES OF THE KEY ID, FOLLOWED BY THE NEXT 2 BYTES, FOLLOWED BY THE NEXT 2 BYTES SHOULD EACH BE CONVERTED INDIVIDUALLY TO LITTLE-ENDIAN.</em></b>.  Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the "little-endian" key ID.</p>
+
+          <pre><p class="text-center">A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
+D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
+
+          <h4>PlayReady Encryption with MP4Box</h4>
+
+          <p>The basic usage of MP4Box for content encryption is:</p>
+
+          <pre><code>MP4Box -crypt &lt;cryptfile&gt; -out &lt;outputfile&gt; &lt;inputfile&gt;</code></pre>
+
+          <p><span class="code">cryptfile</span> is the XML file that describes how MP4Box is to encrypt the content.  Here is the template cryptfile from our playready examples</p>
+
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/playready/playready_cenc.xml</div>
+            <div class="panel-body">
+              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+  &lt;DRMInfo type="pssh" version="0"&gt;
+    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;          &lt;!-- PlayReady SystemID --&gt;
+
+    &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
+
+    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt; &lt;!-- PlayReady Header Object Size --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;               &lt;!-- Number of records --&gt;
+
+    &lt;!-- First record --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;               &lt;!-- Rights Management record type --&gt;
+    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;  &lt;!-- Record length --&gt;
+    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;          &lt;!-- WRM in external file --&gt;
+  &lt;/DRMInfo&gt;
+
+  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7F068B465B6CF53A" saiSavedBox="senc" &gt;
+    &lt;key KID="0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5" value="0x2539FA84B987416009A7FBBA11B239AB" /&gt;
+  &lt;/CrypTrack&gt;
+&lt;/GPACDRM&gt;</code></pre>
+            </div>
+          </div>
+
+          <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.  The XML attribute values surrounded by underscores are replaced at runtime by a special script that is part of our tools.  An excerpt from that script is shown below:</p>
+
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/playready/encrypt.sh</div>
+            <div class="panel-body">
+              <pre><code>#!/bin/bash
+
+if [ -z $1 ]; then
+  echo "Must provide version argument (either 4000 or 4100)"
+  exit
+fi
+
+pushd .
+
+pr_wrm_version=$1
+
+pr_utf16file="wrm_utf16.xml"
+pr_cryptfile="cryptfile"
+
+# Remove all leading whitespace and then remove all end of line characters
+# Then convert to UTF-16LE
+sed 's/^[ \t]*//' playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\n' | iconv -f UTF-8 -t UTF-16LE > $pr_utf16file
+
+# Grab file size and insert into our crypt file template
+pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
+pr_total_size=`expr $size + 10`
+sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
+  -e "s/___PRHO_SIZE___/$pr_total_size/" \
+  -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml > $pr_cryptfile
+MP4Box -crypt $pr_cryptfile bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4 -out bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4
+MP4Box -crypt $pr_cryptfile bbb_720p_h264-3Mb-high-3.1_aac-lc.mp4 -out bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4
+
+rm $pr_cryptfile
+rm $pr_utf16file
+
+popd
+              </code></pre>
+            </div>
+          </div>
+
+          <p>Lets walk through the functionality of this script to highlight the last little nuances of encrypting PlayReady content.  The first step is to remove all whitespace from the rights management header file that is not part of the XML structure and convert to UTF16 little-endian format. <em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.  Next, we compute the size of the newly "re-formatted" rights management header because it must be inserted into the cryptfile along with the filename itself. (A good enhancement to the MP4Box tool would be to insert the size automatically when adding the contents of a file.)  Finally, we compute the total size of the PRO by adding 10 bytes; 4 bytes for the Record Type and Record Length fields for this record and 6 bytes for the Length and PlayReady Record Count fields of the PRO.  Next the sed scripts replace the underscore fields in the template cryptfile to produce the actual file.  Finally, MP4Box is executed for each ABR profile to create the encrypted content files.</p>
 
           <h3 id="primetime">Adobe PrimeTime</h3>
 
@@ -416,7 +549,7 @@ Transcoding successful:
 
           <h3 id="clearkey">Common Encryption Multi-DRM</h3>
 
-          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content one while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back the disparate platforms that support those systems.</p>
+          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back the disparate platforms that support those systems.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
