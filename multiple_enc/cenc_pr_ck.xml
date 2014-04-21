@@ -2,8 +2,9 @@
   <DRMInfo type="pssh" version="0">
     <BS ID128="00000000000000000000000000000000" />  <!-- ClearKey SystemID -->
     <BS bits="8" value="0" />                        <!-- ClearKey Type (0 = URL, 1 = JSON) -->
-    <BS bits="16" value="___CK_URL_SIZE___" />                      <!-- URL length -->
-    <BS dataFile="___CK_URL_FILE___" dataLength="0" />
+
+    <!-- URL length and URL -->
+    <BS bits="16" string="http://localhost:8584/?keyid=10000000100010001000100000000001&keyid=10000000100010001000100000000002" />
   </DRMInfo>
 
   <DRMInfo type="pssh" version="0">

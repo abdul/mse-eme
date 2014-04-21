@@ -32,25 +32,17 @@ sed 's/^[ \t]*//' ../playready/playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\
 pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
 pr_total_size=`expr $size + 10`
 
-ck_cleanfile="clearkey_clean_url.txt"
-
-# Remove all leading whitespace and all end of line characters
-sed 's/^[ \t]*//' ../clearkey/clearkey_url.txt | tr -d '\r\n' > $ck_cleanfile
-
 # Grab file size and insert into our crypt file template
 size=`du -b $ck_cleanfile | awk '{print $1}'`
 
 sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
   -e "s/___PRHO_SIZE___/$pr_total_size/" \
-  -e "s/___WRM_FILE___/$pr_utf16file/" \
-  -e "s/___CK_URL_SIZE___/$size/" \
-  -e "s/___CK_URL_FILE___/$ck_cleanfile/" cenc_pr_ck.xml > $cryptfile
+  -e "s/___WRM_FILE___/$pr_utf16file/" cenc_pr_ck.xml > $cryptfile
 
 $gpac_bin_dir/MP4Box -crypt $cryptfile $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4 -out $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4
 $gpac_bin_dir/MP4Box -crypt $cryptfile $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc.mp4 -out $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4
 
 rm $pr_utf16file
-rm $ck_cleanfile
 rm $cryptfile
 
 popd
