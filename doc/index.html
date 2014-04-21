@@ -127,7 +127,7 @@ $ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
 
           <p>The Java application extracts a Windows version of FFMpeg for performing the actual transcode.  Therefore, you must run the FAMIUM transcode tool on a Windows platform</p>
 
-          <pre><code class="scrollable-code">$ java -jar FAMIUMTranscoder.jar big-buck-bunny-720p-h264_trailer_stereo
+          <pre><code class="scrollable-code">$ java -jar FAMIUMTranscoder.jar big-buck-bunny-720p-h264_trailer_stereo.mp4
 ### FOKUS DASH Transcoder Tool ###
 
 arg[0]: big-buck-bunny-720p-h264_trailer_stereo.mp4
@@ -393,7 +393,7 @@ Transcoding successful:
             <li>128-bit Key IDs</li>
           </ul>
           <p>In addition to the required encryption standards, the specification defines several new boxes that describe how encrypted content is to be represented in ISO BMFF containers.  These new boxes indicate which tracks within the media have encrypted samples and which samples within that track are actually encrypted.  Each set of encrypted samples is assoicated with a encryption key ID.  It is possible to have alternating sequences of encrypted and unencrypted samples.  It is also possible to have multiple encryption key IDs associated with various samples throughout the media.  However, each contiguous set of encrypted samples may only be encrypted by a single key ID.</p>
-          <p>The box that contains DRM-specific information is called the 'pssh' (Protection System Specific Header).  This box contains all the information that the CDM and/or player application will need to retrieve decryption keys from the DRM-specific license server.  The following sections desribe how to use our tools to encrypt the content and build and insert one or more DRM-specific 'pssh' boxes.</p>
+          <p>The box that contains DRM-specific information is called the 'pssh' (Protection System Specific Header).  This box contains all the information the CDM and/or player application will need to retrieve decryption keys from the DRM-specific license server.  The following sections desribe how to use our tools to encrypt the content and build and insert one or more DRM-specific 'pssh' boxes.</p>
 
           <p>To encrypt our ABR content, we use the open-source <a href="http://gpac.wp.mines-telecom.fr/mp4box/">MP4Box</a> tool from the <a href="http://gpac.wp.mines-telecom.fr/">GPAC</a> project (maintained by <a href="http://www.telecom-paristech.fr/">Telecom ParisTech</a>).  Please note that it is possible to do some forms of non-CommonEncryption using the MP4Box tool, but it will not be covered in this documentation.  We have fixed many bugs in MP4Box over the course of our development, so we recommend that you download one of the <a href="http://gpac.wp.mines-telecom.fr/downloads/gpac-nightly-builds/">nightly builds</a> or build it from <a href="http://sourceforge.net/svn/?group_id=84101">source</a>.</p>
           <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>, but we will go over several specific instances of using the tool to encrypt using particular DRMs.</p>
@@ -522,6 +522,8 @@ pr_total_size=`expr $size + 10`
 sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
   -e "s/___PRHO_SIZE___/$pr_total_size/" \
   -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml > $pr_cryptfile
+
+# Run MP4Box for each media file
 MP4Box -crypt $pr_cryptfile bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4 -out bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4
 MP4Box -crypt $pr_cryptfile bbb_720p_h264-3Mb-high-3.1_aac-lc.mp4 -out bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4
 
@@ -533,7 +535,14 @@ popd
             </div>
           </div>
 
-          <p>Lets walk through the functionality of this script to highlight the last little nuances of encrypting PlayReady content.  The first step is to remove all whitespace from the rights management header file that is not part of the XML structure and convert to UTF16 little-endian format. <em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.  Next, we compute the size of the newly "re-formatted" rights management header because it must be inserted into the cryptfile along with the filename itself. (A good enhancement to the MP4Box tool would be to insert the size automatically when adding the contents of a file.)  Finally, we compute the total size of the PRO by adding 10 bytes; 4 bytes for the Record Type and Record Length fields for this record and 6 bytes for the Length and PlayReady Record Count fields of the PRO.  Next the sed scripts replace the underscore fields in the template cryptfile to produce the actual file.  Finally, MP4Box is executed for each ABR profile to create the encrypted content files.</p>
+          <p>Lets walk through the functionality of this script to highlight the last little nuances of encrypting PlayReady content.</p>
+          <ol>
+            <li>Remove all whitespace from the rights management header file that is not part of the XML structure and convert to UTF16 little-endian format. <em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.</li>
+            <li>Calculate the size of the newly "re-formatted" rights management header because it must be inserted into the cryptfile along with the filename itself. (A good enhancement to the MP4Box tool would be to insert the size automatically when adding the contents of a file.)</li>
+            <li>Calculate the total size of the PRO by adding 10 bytes; 4 bytes for the Record Type (2) and Record Length (2) fields for this record and 6 bytes for the Length (4) and PlayReady Record Count (2) fields of the PRO.</li>
+            <li>Execute sed scripts to replace the underscore fields in the template cryptfile to produce the actual file.</li>
+            <li>Execute MP4Box for each ABR profile to create the encrypted content files.</li>
+          </ol>
 
           <h3 id="primetime">Adobe PrimeTime</h3>
 
@@ -549,12 +558,75 @@ popd
 
           <h3 id="clearkey">Common Encryption Multi-DRM</h3>
 
-          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back the disparate platforms that support those systems.</p>
+          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
+          <p>The final step in the content creation process is to segment/index our media files and then create a DASH manifest file (.mpd).  Our test tools create content that attempts to adhere to the DASH-AVC/264 guidelines.  Therefore, we are restricted to a subset of the functionality that appears in the MPEG-DASH specification.  MP4Box, once again, is our tool of choice for performing DASH segmenting and packaging.  MP4Box supports a large assortment of command-line options when DASHing content.  You can run <span class="code">MP4Box -h dash</span> to see a complete description of all options.  The basic usage of the tool looks likes this:</p>
+
+          <pre><code>MP4Box -dash &lt;seg_duration&gt; -profile &lt;profile&gt; -out &lt;mpdfile&gt; &lt;inputfiles&gt;</code></pre>
+
+          <ul>
+            <li><span class="code">&lt;seg_duration&gt;</span> is the requested duration of each media segment after segmentation</li>
+            <li><span class="code">&lt;profile&gt;</span> is the desired MPEG-DASH profile (onDemand, live, main, simple, etc...)</li>
+            <li><span class="code">&lt;mpdfile&gt;</span> is the location and filename of the DASH Media Presentation Description file that will be written</li>
+            <li><span class="code">&lt;inputfiles&gt;</span> specifies the input media files that will be parsed  and segmented to produce new output media files.  There will be one Representation in the MPD file for each input file specified.</li>
+          </ul>
+
           <h3>isobmff-ondemand Profile</h3>
-          Coming Soon
+
+          <p>For On-Demand (VOD) content, MP4Box will produce a single fragmented MP4 file for each audio/video/text component of your input video across each ABR profile.  If your input contains multiplexed A/V data, the output files from MP4Box will be de-multiplexed audio and video in separate files; one for each ABR bitrate.  In fact, DASH-AVC/264 guidelines require demultiplexed content and separate Adaptation Sets for each A/V component.  Here is an example command line from one of our scripts that creates DASH On-Demand content:</p>
+
+          <pre><code>MP4Box -dash 10000 -rap -bs-switching no -sample-groups-traf \
+  -profile onDemand -out bbb_720p_h264_enc.mpd \
+  $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4#video:id=2Mb \
+  $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4#audio:id=audio \
+  $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4#video:id=3Mb</code></pre>
+
+          <p>With this command we are generating MPEG-DASH content with 10 second segment duration from 2 video bitrates and 1 audio bitrate.  Audio and video Representations will be separated into their own AdaptationSet. The important takeaways from that command are:</p>
+
+          <ul>
+            <li><span class="code">-rap</span> This indicates that each segment must begin with a random access point (I-frame).  Using this option, segment durations may not be exactly what you requested due to the fact that RAPs might not land exactly on those time boundaries.</li>
+            <li><span class="code">-bs-switching no</span> At the time, Google Chrome could not handle anything other than <b>avc1</b> and <b>avc2</b> type ISOBMFF tracks (SPS/PPS stored in the sample entry).  Without this option, MP4Box would generate <b>avc3</b> type tracks (SPS/PPS stored inband in the samples themselves).  This may have changed with later versions of chrome.</li>
+            <li><span class="code">-sample-groups-traf</span> The standard MP4Box behavior when generating fragmented MP4s is to place Sample Group Description ('sgpd') boxes in the Movie ('moov') box and the corresponding Sample To Group ('sbgp') boxes in the Movie Fragment ('moof') boxes.  This behavior is not allowed by the <a href="http://www.uvvuwiki.com/images/c/cb/CFFMediaFormat-1.1r1.pdf">DECE Common File Format</a> specification.  Microsoft's Internet Explorer 11 will <em>only</em> parse media files that conform to the CFF.</li>
+            <li><span class="code">#video:id=2Mb</span> These suffix arguments to our input files tell MP4Box to do several things.  First, it allows us to tell MP4Box to demultiplex our mulitplexed input files and to use the first video (<span class="code">#video</span>) or audio (<span class="code">#video</span>) track from the file for a particular Representation.  It also allows us to specify attribute values on the Representation elements (id, bandwith, xlink, role) in the generated MPD.  Multiple attributes can be specified, separated by commas.</li>
+          </ul>
+
+          <div class="alert alert-danger">
+            <b>NOTE:</b> DASH-AVC/264 requires the ContentProtection element in the MPD to be in the AdaptationSet.  MP4Box currently places the ContentProtection element in each Representation.  You must manually edit your MPD to move the ContentProtection element(s) from any of the contained Representations in to the parent AdaptationSet.
+          </div>
+
+          <p>Here is an example MPD generated from command line shown above:</p>
+
+          <pre><code>&lt;?xml version="1.0"?&gt;
+&lt;!-- MPD file Generated with GPAC version 0.5.1-DEV-rev5178M  on 2014-03-28T17:35:25Z--&gt;
+&lt;MPD xmlns="urn:mpeg:dash:schema:mpd:2011" minBufferTime="PT1.500000S" type="static" mediaPresentationDuration="PT0H0M33.05S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011" xmlns:cenc="urn:mpeg:cenc:2013"&gt;
+ &lt;ProgramInformation moreInformationURL="http://gpac.sourceforge.net"&gt;
+  &lt;Title&gt;bbb_720p_h264_enc.mpd generated by GPAC&lt;/Title&gt;
+ &lt;/ProgramInformation&gt;
+
+ &lt;Period id="" duration="PT0H0M33.05S"&gt;
+  &lt;AdaptationSet segmentAlignment="true" maxWidth="1280" maxHeight="720" maxFrameRate="25" par="16:9" subsegmentStartsWithSAP="1"&gt;
+   &lt;ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="a1b1c1d1-a2b2-a3b3-a4b4-a5b5c5d5e5f5"/&gt;
+   &lt;Representation id="2Mb" mimeType="video/mp4" codecs="avc1.64001f" width="1280" height="720" frameRate="25" sar="1:1" startWithSAP="1" bandwidth="1971252"&gt;
+    &lt;BaseURL&gt;bbb_720p_h264-2Mb-high-3.1_aac-lc_enc_track1_dashinit.mp4&lt;/BaseURL&gt;
+    &lt;SegmentBase indexRangeExact="true" indexRange="1783-1862"/&gt;
+   &lt;/Representation&gt;
+   &lt;Representation id="3Mb" mimeType="video/mp4" codecs="avc1.64001f" width="1280" height="720" frameRate="25" sar="1:1" startWithSAP="1" bandwidth="2912401"&gt;
+    &lt;BaseURL&gt;bbb_720p_h264-3Mb-high-3.1_aac-lc_enc_track1_dashinit.mp4&lt;/BaseURL&gt;
+    &lt;SegmentBase indexRangeExact="true" indexRange="1783-1862"/&gt;
+   &lt;/Representation&gt;
+  &lt;/AdaptationSet&gt;
+  &lt;AdaptationSet segmentAlignment="true" subsegmentStartsWithSAP="1"&gt;
+   &lt;Representation id="audio" mimeType="audio/mp4" codecs="mp4a.40.2" audioSamplingRate="48000" startWithSAP="1" bandwidth="490735"&gt;
+    &lt;AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/&gt;
+    &lt;BaseURL&gt;bbb_720p_h264-2Mb-high-3.1_aac-lc_enc_track2_dashinit.mp4&lt;/BaseURL&gt;
+    &lt;SegmentBase indexRangeExact="true" indexRange="1635-1714"/&gt;
+   &lt;/Representation&gt;
+  &lt;/AdaptationSet&gt;
+ &lt;/Period&gt;
+&lt;/MPD&gt;</code></pre>
+
           <h3>isobmff-live Profile</h3>
           Coming Soon
 
@@ -582,13 +654,30 @@ popd
           <h1 id="browsers">Browsers</h1>
 
           <h2>Internet Explorer 11 (Windows 8.1)</h2>
-          Coming Soon
+
+          <h3>EME API Support</h3>
+
+          <h3>CDM Support</h3>
+
+          <h3>Common File Format</h3>
+
           <h2>Chrome</h2>
-          Coming Soon
+
+          <h3>EME API Support</h3>
+
+          <h3>CDM Support</h3>
+
           <h2>FAMIUM Browser</h2>
-          Coming Soon
+
+          <h3>EME API Support</h3>
+
+          <h3>CDM Support</h3>
+
           <h2>Firefox</h2>
-          Coming Soon
+
+          <h3>EME API Support</h3>
+
+          <h3>CDM Support</h3>
 
           <hr class="col-md-12">
 
