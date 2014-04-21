@@ -455,7 +455,7 @@ IV =
 
           <p>The rights management header in this example conforms to version 4.0.0.0.  The Microsoft documentation also describes a version 4.1.0.0 rights management header that contains the same data, but it a little more compact.  We haven't been able to get content to play properly when using the 4.1.0.0 header as of the writing of this document.</p>
 
-          <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value is the <span class="code">KID</span> element.  This is the base64-encoded key ID that we associated with our encryption key.  The key ID must be in little-endian format before being encoded.  However, this is not your typical little-endian; <b><em>THE FIRST 4 BYTES OF THE KEY ID, FOLLOWED BY THE NEXT 2 BYTES, FOLLOWED BY THE NEXT 2 BYTES SHOULD EACH BE CONVERTED INDIVIDUALLY TO LITTLE-ENDIAN.</em></b>.  Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the "little-endian" key ID.</p>
+          <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value is the <span class="code">KID</span> element.  This is the base64-encoded key ID that we associated with our encryption key.  The key ID must be in little-endian format before being encoded.  However, this is not your typical little-endian; <b><em>THE FIRST 4 BYTES OF THE KEY ID, FOLLOWED BY THE NEXT 2 BYTES, FOLLOWED BY THE NEXT 2 BYTES SHOULD EACH BE CONVERTED INDIVIDUALLY TO LITTLE-ENDIAN.  THE LAST 8 BYTES MUST REMAIN BIG-ENDIAN.</em></b>  Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the "little-endian" key ID.</p>
 
           <pre><p class="text-center">A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
 D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
@@ -554,11 +554,149 @@ popd
 
           <h3 id="clearkey">ClearKey</h3>
 
-          Coming Soon
+          <p>The EME spec mandates browser support for a Simple Decryption system called <a href="https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#simple-decryption-clear-key">Clear Key</a>.  The specification only provides the format of the decryption key data passed to the <span class="code">MediaKeySession.update()</span> EME API.  We wanted to develop a simple implementation that would show evidence of support (or lack of support) for Clear Key in browsers.  Additionally, our implementation creates a starting point for discussions regarding Clear Key integration with the Common Encryption standard.</p>
+
+          <h4>Common Encryption</h4>
+
+          <p>The primary task in getting Clear Key to work with Common encryption is to define the contents of the 'pssh' box in ISO BMFF files.  As shown in previous sections, each DRM vendor has developed their own data format for the 'pssh' that communicates the DRM-specific data that they believe to relevant and important.  In implementing our Clear Key solution, we wanted to cover two basic use-cases:</p>
+          <ol>
+            <li>Decryption key(s) is contained within the media itself.  In this case, keys may be transported over the network in the clear (assuming the media is carried over a network).</li>
+            <li>Decryption key(s) is retrieved from a remote server (similar to real DRMs).  Keys may be transported securely over the network (e.g. via HTTPS) and are only in the clear within the javascript code running on the browser.</li>
+          </ol>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title"><em>Clear Key PSSH Box Data</em></h4>
+            </div>
+            <div class="panel-body">
+              <code><pre>    clearkey_pssh_data {
+        unsigned int (8)                  <b>type</b>
+        if (type == 0) {
+            unsigned int(16)              <b>url_length</b>
+            unsigned int(8)[url_length]   <b>url</b>
+        }
+        else if (type == 1) {
+            unsigned int(16)              <b>jwk_length</b>
+            unsigned int(8)[jwk_length]   <b>jwk</b>
+        }
+    }</pre></code>
+
+              <ul>
+                <li><b><code>type</code></b> : A value of 0 indicates that the decryption keys will be retrieved from a remote server vi HTTP GET request to the provided URL.  A value of 1 indicates that the decryption keys are stored within the 'pssh' data.</li>
+                <li><b><code>url_length</code></b> : The length in bytes of the <code>url</code> field</li>
+                <li><b><code>url</code></b> : UTF-8 encoded URL string.  The javascript application will simply issue an HTTP GET request to this URL to retrieve the decryption keys.  The HTTP response will be a JSON object that conforms to the JSON Web Key (JWK) definition referenced in the EME Clear Key specification.</li>
+                <li><b><code>jwk_length</code></b> : The length in bytes of the <code>jwk</code> field</li>
+                <li><b><code>jwk</code></b> : UTF-8 encoded string representation of the JSON Web Key (JWK) object that can be passed to the <span class="code">update()</span> EME API after conversion to <span class="code">Uint8Array</span>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>We have arbitrarily and independently selected the GUID of <code>00000000-0000-0000-0000-000000000000</code> to use as the System ID for our Clear Key implementation.  This GUID is not regsistered with any central number registrar.  Below is an example MP4Box cryptfile showing an how to use our type 0 Clear Key implementation in content encryption.</p>
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/clearkey/clearkey_cenc.xml</div>
+            <div class="panel-body">
+              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+  &lt;DRMInfo type="pssh" version="0"&gt;
+    &lt;BS ID128="00000000000000000000000000000000" /&gt;  &lt;!-- ClearKey SystemID --&gt;
+    &lt;BS bits="8" value="0" /&gt;                        &lt;!-- ClearKey Type (0 = URL, 1 = JSON) --&gt;
+
+    &lt;!-- URL length and URL --&gt;
+    &lt;BS bits="16" string="http://localhost:8584/?keyid=10000000100010001000100000000001&amp;keyid=10000000100010001000100000000002" /&gt;
+  &lt;/DRMInfo&gt;
+
+  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" &gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x04714BD8D7E1F3815FC47D0A834F0E17" /&gt;
+  &lt;/CrypTrack&gt;
+&lt;/GPACDRM&gt;</code></pre>
+            </div>
+          </div>
+
+          <h4>Clear Key Server</h4>
+
+          <p>As we showed in the previous section, we can indicate in our 'pssh' the desire to retrieve our decryption keys from a remote URL.  We have implemented a very simple server process using <a href="http://nodejs.org/">Node.js</a> to return hard-coded decryption keys based on query string arguments passed in the URL.  The server code itself is extremely simple:</p>
+
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/clearkey/server/src/clearkey.js</div>
+            <div class="panel-body">
+              <pre><code class="scrollable-code">var https = require('https');
+var http = require('http');
+var fs = require('fs');
+var url = require('url');
+
+keys = {
+    '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
+    '10000000100010001000100000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E18", 'hex')
+};
+
+var options = {
+    key: fs.readFileSync('security/cl_clearkey-key.pem'),
+    cert: fs.readFileSync('security/cl_clearkey-cert.pem')
+};
+
+var addCORSHeaders = function(res, length) {
+    res.writeHeader(200, {
+        "Content-Length": length,
+        "Content-Type": 'application/json',
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Methods": 'GET, PUT, POST, DELETE, OPTIONS',
+        "Access-Control-Allow-Headers": 'Content-Type, Authorization, Content-Length, X-Requested-Width'});
+};
+
+// Still testing this
+https.createServer(options, function(req, res) {
+    addCORSHeaders(res);
+    res.end("hello world\n");
+
+}).listen(8585);
+
+http.createServer(function(req, res) {
+    var parsed_url = url.parse(req.url, true);
+    var query = parsed_url.query;
+
+    // Validate query string
+    if (query === undefined || query.keyid === undefined) {
+        res.writeHeader(400, "Illegal query string");
+        res.end();
+    }
+
+    var keyIDs = [];
+    if (query.keyid instanceof Array) {
+        keyIDs = query.keyid;
+    } else {
+        keyIDs.push(query.keyid);
+    }
+
+    var jwk_array = [];
+    for (var i = 0; i < keyIDs.length; i++) {
+        var jwk = {
+            kty: "oct",
+            alg: "A128GCM",
+            kid: new Buffer(keyIDs[i], 'hex').toString('base64').replace(/=/g, ""),
+            k: keys[keyIDs[i]].toString('base64').replace(/=/g, "")
+        };
+        jwk_array.push(jwk);
+    }
+    var response = {
+        keys: jwk_array
+    };
+    var json_str_response = JSON.stringify(response);
+    addCORSHeaders(res, json_str_response.length);
+    res.write(json_str_response);
+    res.end();
+
+}).listen(8584);</code></pre>
+            </div>
+          </div>
+
+          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application (which may be served from a different host) to retrieve data from the clear key license server.</p>
+
+          <h4>dash.js Player</h4>
+
+          <p>We have added support to the dash.js player for parsing the Clear Key 'pssh' from the <span class="code">initData</span> attribute of the <span class="code">needkey</span> EME event.  The player looks for a 'pssh' with the <code>00000000-0000-0000-0000-000000000000</code> guid we have assigned to our implementation of Clear Key, parses the data and then adds the key(s) (possibly retrieved from a remote server) to the browser using the EME <span class="code">update()</span> API.  See the <span class="code">clearkeyGetUpdate()</span> function in <span class="code">app/js/streaming/ProtectionExtensions.js</span>.</p>
 
           <h3 id="clearkey">Common Encryption Multi-DRM</h3>
 
-          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
+          <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  Up until this point, we have only demonstrated the encryption of content using a single DRM.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
@@ -593,10 +731,10 @@ popd
           </ul>
 
           <div class="alert alert-danger">
-            <b>NOTE:</b> DASH-AVC/264 requires the ContentProtection element in the MPD to be in the AdaptationSet.  MP4Box currently places the ContentProtection element in each Representation.  You must manually edit your MPD to move the ContentProtection element(s) from any of the contained Representations in to the parent AdaptationSet.
+            <b>NOTE:</b> DASH-AVC/264 requires the ContentProtection element in the MPD to be in the AdaptationSet.  MP4Box currently places the ContentProtection element in each Representation.  <b><em>You must manually edit your MPD to move the ContentProtection element(s) from any of the contained Representations in to the parent AdaptationSet.</em></b>
           </div>
 
-          <p>Here is an example MPD generated from command line shown above:</p>
+          <p>Here is an example MPD generated from command line shown above.  The content was encrypted using our Common Encryption tools with Microsoft PlayReady.  As you can see, there is no indication that PlayReady DRM is being used or if more than one DRM available to decrypt the content.  All of that is hidden by Common Encryption and will be discovered by the client player application at playback-time.</p>
 
           <pre><code>&lt;?xml version="1.0"?&gt;
 &lt;!-- MPD file Generated with GPAC version 0.5.1-DEV-rev5178M  on 2014-03-28T17:35:25Z--&gt;
@@ -626,6 +764,8 @@ popd
   &lt;/AdaptationSet&gt;
  &lt;/Period&gt;
 &lt;/MPD&gt;</code></pre>
+
+          <p>Even though there is only one file generated for each Representation, the files are still segmented.  The player application can quickly access the segment index ('sidx') box to determine where the various segments begin and end within the file.  The <span class="code">&lt;SegmentBase&gt;</span> element tells the application exactly where the 'sidx' box is within the overall file.</p>
 
           <h3>isobmff-live Profile</h3>
           Coming Soon
