@@ -119,7 +119,7 @@ $ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
           -codec:a libfdk_aac -profile:a aac_low
           abr_1920x1080_h264-4500Kb_aac-lc.mp4</code></pre>
 
-          <h3 id="libav">FAMIUM Transcoder</h3>
+          <h3 id="famium_transcoder">FAMIUM Transcoder</h3>
 
           <p>The FAMIUM Transcoder is a Java application which will transcode/transrate an input file into a set of predefined ABR profiles.  Documentation provided to us by the FAMIUM team can be found <a href="resources/famium/FAMIUM%20DASH%20Transcoder%20Toolset.pdf">here</a>.
 
@@ -402,7 +402,7 @@ Transcoding successful:
 
           <p>Microsoft provides <a href="http://www.microsoft.com/playready/documents/">several documents</a> that describe the PlayReady DRM system.  These documents detail the DRM metadata that is inserted in content files along with special instructions for doing PlayReady content protection in MPEG-DASH. The first step in creating PlayReady encrypted content is to generate your encryption keys.</p>
 
-          <h4 id="playready">Encryption Key Generation</h4>
+          <h4 id="playready_keygen">Encryption Key Generation</h4>
 
           <p>Microsoft has made a <a href="http://playready.directtaps.net/pr/doc/customrights/">test license server</a> available for developers who wish to test their implementations.  This server can accept query string arguments that apply different attributes to the returned license based on the desired content rights.  Since we can not store our own encryption keys in the test license server, we need a way to ensure that the keys we use to encrypt our content will be the same keys that are returned by the license server upon playback.  Microsoft has defined an algorithm (detailed at the end of <a href="http://download.microsoft.com/download/2/0/2/202E5BD8-36C6-4DB8-9178-12472F8B119E/PlayReady%20Header%20Object%204-15-2013.docx">this document</a> in the section titled <b>Content Key Algorithm</b>) that developers can use to generate their own keys based on a unique <i>key seed</i> assigned to the server and a user-defined <i>key ID</i>.  CableLabs has created a Java application that will generate encryption keys according to this algorithm along with a few other crucial pieces of data required for the encyption process.  The tool is located in <span class="code">mp4/playready/keygen/PlayReadyKeygen.jar</span> in the software artifacts repository.</p>
 
@@ -444,8 +444,8 @@ IV =
       &lt;KEYLEN&gt;16&lt;/KEYLEN&gt;
       &lt;ALGID&gt;AESCTR&lt;/ALGID&gt;
     &lt;/PROTECTINFO&gt;
-    &lt;KID&gt;AAAAEAAQABAQABAAAAAAAQ==&lt;/KID&gt;
-    &lt;CHECKSUM&gt;5TzIYQ2hrOY=&lt;/CHECKSUM&gt;
+    &lt;KID&gt;0cGxobKis6OktKW1xdXl9Q==&lt;/KID&gt;
+    &lt;CHECKSUM&gt;bbp1OUrdtMI=&lt;/CHECKSUM&gt;
     &lt;LA_URL&gt;http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&amp;amp;UseSimpleNonPersistentLicense=1&lt;/LA_URL&gt;
   &lt;/DATA&gt;
 &lt;/WRMHEADER&gt;
@@ -455,10 +455,12 @@ IV =
 
           <p>The rights management header in this example conforms to version 4.0.0.0.  The Microsoft documentation also describes a version 4.1.0.0 rights management header that contains the same data, but it a little more compact.  We haven't been able to get content to play properly when using the 4.1.0.0 header as of the writing of this document.</p>
 
-          <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value is the <span class="code">KID</span> element.  This is the base64-encoded key ID that we associated with our encryption key.  The key ID must be in little-endian format before being encoded.  However, this is not your typical little-endian; <b><em>THE FIRST 4 BYTES OF THE KEY ID, FOLLOWED BY THE NEXT 2 BYTES, FOLLOWED BY THE NEXT 2 BYTES SHOULD EACH BE CONVERTED INDIVIDUALLY TO LITTLE-ENDIAN.  THE LAST 8 BYTES MUST REMAIN BIG-ENDIAN.</em></b>  Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the "little-endian" key ID.</p>
+          <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value from our key generation tool (Checksum, Base64) goes into the <span class="code">CHECKSUM</span> element.  The other value (Content Key ID, Base64, little-endian) goes into the <span class="code">KID</span> element.  This is the base64 and binary-encoded key ID that we associated with our encryption key.  <a href="http://en.wikipedia.org/wiki/Guid#Binary_encoding">Microsoft's method for binary-encoding GUIDs</a> is little bit different than what you expect. The first 8 bytes are divided into 3 fields of 4 bytes, 2 bytes, and 2 bytes.  Each field is encoded using native byte ordering (little-endian on x86 systems).  The last 8 bytes are always encoded big-endian, regardless of the native OS. Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the binary-encoded key ID.</p>
 
-          <pre><p class="text-center">A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
-D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
+          <div class="well">
+            <p class="text-center"><pre>A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
+D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</pre></p>
+          </div>
 
           <h4>PlayReady Encryption with MP4Box</h4>
 
@@ -611,92 +613,15 @@ popd
             </div>
           </div>
 
-          <h4>Clear Key Server</h4>
-
-          <p>As we showed in the previous section, we can indicate in our 'pssh' the desire to retrieve our decryption keys from a remote URL.  We have implemented a very simple server process using <a href="http://nodejs.org/">Node.js</a> to return hard-coded decryption keys based on query string arguments passed in the URL.  The server code itself is extremely simple:</p>
-
-          <div class="panel panel-success">
-            <div class="panel-heading">mp4/clearkey/server/src/clearkey.js</div>
-            <div class="panel-body">
-              <pre><code class="scrollable-code">var https = require('https');
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-
-keys = {
-    '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
-    '10000000100010001000100000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E18", 'hex')
-};
-
-var options = {
-    key: fs.readFileSync('security/cl_clearkey-key.pem'),
-    cert: fs.readFileSync('security/cl_clearkey-cert.pem')
-};
-
-var addCORSHeaders = function(res, length) {
-    res.writeHeader(200, {
-        "Content-Length": length,
-        "Content-Type": 'application/json',
-        "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Methods": 'GET, PUT, POST, DELETE, OPTIONS',
-        "Access-Control-Allow-Headers": 'Content-Type, Authorization, Content-Length, X-Requested-Width'});
-};
-
-// Still testing this
-https.createServer(options, function(req, res) {
-    addCORSHeaders(res);
-    res.end("hello world\n");
-
-}).listen(8585);
-
-http.createServer(function(req, res) {
-    var parsed_url = url.parse(req.url, true);
-    var query = parsed_url.query;
-
-    // Validate query string
-    if (query === undefined || query.keyid === undefined) {
-        res.writeHeader(400, "Illegal query string");
-        res.end();
-    }
-
-    var keyIDs = [];
-    if (query.keyid instanceof Array) {
-        keyIDs = query.keyid;
-    } else {
-        keyIDs.push(query.keyid);
-    }
-
-    var jwk_array = [];
-    for (var i = 0; i < keyIDs.length; i++) {
-        var jwk = {
-            kty: "oct",
-            alg: "A128GCM",
-            kid: new Buffer(keyIDs[i], 'hex').toString('base64').replace(/=/g, ""),
-            k: keys[keyIDs[i]].toString('base64').replace(/=/g, "")
-        };
-        jwk_array.push(jwk);
-    }
-    var response = {
-        keys: jwk_array
-    };
-    var json_str_response = JSON.stringify(response);
-    addCORSHeaders(res, json_str_response.length);
-    res.write(json_str_response);
-    res.end();
-
-}).listen(8584);</code></pre>
-            </div>
-          </div>
-
-          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application (which may be served from a different host) to retrieve data from the clear key license server.</p>
-
           <h4>dash.js Player</h4>
 
           <p>We have added support to the dash.js player for parsing the Clear Key 'pssh' from the <span class="code">initData</span> attribute of the <span class="code">needkey</span> EME event.  The player looks for a 'pssh' with the <code>00000000-0000-0000-0000-000000000000</code> guid we have assigned to our implementation of Clear Key, parses the data and then adds the key(s) (possibly retrieved from a remote server) to the browser using the EME <span class="code">update()</span> API.  See the <span class="code">clearkeyGetUpdate()</span> function in <span class="code">app/js/streaming/ProtectionExtensions.js</span>.</p>
 
-          <h3 id="clearkey">Common Encryption Multi-DRM</h3>
+          <h3 id="multi_drm">Common Encryption Multi-DRM</h3>
 
           <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  Up until this point, we have only demonstrated the encryption of content using a single DRM.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
+
+          <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
@@ -833,6 +758,85 @@ http.createServer(function(req, res) {
           Coming Soon
 
           <h2>CableLabs ClearKey Test Server</h2>
+
+          <h4>Clear Key Server</h4>
+
+          <p>As we showed in a previous section, we can indicate in our 'pssh' the desire to retrieve our Clear Key decryption keys from a remote URL.  We have implemented a very simple server process using <a href="http://nodejs.org/">Node.js</a> to return hard-coded decryption keys based on query string arguments passed in the URL.  The server code itself is extremely simple:</p>
+
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/clearkey/server/src/clearkey.js</div>
+            <div class="panel-body">
+              <pre><code class="scrollable-code">var https = require('https');
+var http = require('http');
+var fs = require('fs');
+var url = require('url');
+
+keys = {
+    '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
+    '10000000100010001000100000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E18", 'hex')
+};
+
+var options = {
+    key: fs.readFileSync('security/cl_clearkey-key.pem'),
+    cert: fs.readFileSync('security/cl_clearkey-cert.pem')
+};
+
+var addCORSHeaders = function(res, length) {
+    res.writeHeader(200, {
+        "Content-Length": length,
+        "Content-Type": 'application/json',
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Methods": 'GET, PUT, POST, DELETE, OPTIONS',
+        "Access-Control-Allow-Headers": 'Content-Type, Authorization, Content-Length, X-Requested-Width'});
+};
+
+// Still testing this
+https.createServer(options, function(req, res) {
+    addCORSHeaders(res);
+    res.end("hello world\n");
+
+}).listen(8585);
+
+http.createServer(function(req, res) {
+    var parsed_url = url.parse(req.url, true);
+    var query = parsed_url.query;
+
+    // Validate query string
+    if (query === undefined || query.keyid === undefined) {
+        res.writeHeader(400, "Illegal query string");
+        res.end();
+    }
+
+    var keyIDs = [];
+    if (query.keyid instanceof Array) {
+        keyIDs = query.keyid;
+    } else {
+        keyIDs.push(query.keyid);
+    }
+
+    var jwk_array = [];
+    for (var i = 0; i &lt; keyIDs.length; i++) {
+        var jwk = {
+            kty: "oct",
+            alg: "A128GCM",
+            kid: new Buffer(keyIDs[i], 'hex').toString('base64').replace(/=/g, ""),
+            k: keys[keyIDs[i]].toString('base64').replace(/=/g, "")
+        };
+        jwk_array.push(jwk);
+    }
+    var response = {
+        keys: jwk_array
+    };
+    var json_str_response = JSON.stringify(response);
+    addCORSHeaders(res, json_str_response.length);
+    res.write(json_str_response);
+    res.end();
+
+}).listen(8584);</code></pre>
+            </div>
+          </div>
+
+          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application (which may be served from a different host) to retrieve data from the clear key license server.</p>
 
        </div>
       </div>
