@@ -458,8 +458,8 @@ IV =
           <p>You can see two values in the rights management header that we pulled from the output of our key generation tool.  The first value from our key generation tool (Checksum, Base64) goes into the <span class="code">CHECKSUM</span> element.  The other value (Content Key ID, Base64, little-endian) goes into the <span class="code">KID</span> element.  This is the base64 and binary-encoded key ID that we associated with our encryption key.  <a href="http://en.wikipedia.org/wiki/Guid#Binary_encoding">Microsoft's method for binary-encoding GUIDs</a> is little bit different than what you expect. The first 8 bytes are divided into 3 fields of 4 bytes, 2 bytes, and 2 bytes.  Each field is encoded using native byte ordering (little-endian on x86 systems).  The last 8 bytes are always encoded big-endian, regardless of the native OS. Look closely at the output of the PlayReadyKeygen tool to see the difference between the original key ID and the binary-encoded key ID.</p>
 
           <div class="well">
-            <p class="text-center"><pre>A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
-D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</pre></p>
+            <pre><p class="text-center">A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>
+D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
           </div>
 
           <h4>PlayReady Encryption with MP4Box</h4>
@@ -494,6 +494,8 @@ D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</pre></p>
 &lt;/GPACDRM&gt;</code></pre>
             </div>
           </div>
+
+          <p>Let's look at the bottom portion of the file first.  You can add a <span class="code">CrypTrack</span> element for each track in the content that you want to encrypt (identified by its track ID from the Track Header ('tkhd') box).  Within that element, you can specific one or more encryption keys and associated key ID.  If you provide more than one key, use the <span class="code">roll</span> attribute of the <span class="code">CrypTrack</span> element to indicate how many samples should be encrypted with each key.</p>
 
           <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.  The XML attribute values surrounded by underscores are replaced at runtime by a special script that is part of our tools.  An excerpt from that script is shown below:</p>
 
@@ -621,7 +623,36 @@ popd
 
           <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  Up until this point, we have only demonstrated the encryption of content using a single DRM.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
 
-          <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content</p>
+          <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content;  you just add multiple <span class="code">&lt;DRMInfo&gt;</span> elements to the cryptfile.  Each one will introduce a new 'pssh' box into the content.</p>
+
+          <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+  &lt;DRMInfo type="pssh" version="0"&gt;
+    &lt;BS ID128="00000000000000000000000000000000" /&gt;  &lt;!-- ClearKey SystemID --&gt;
+    &lt;BS bits="8" value="0" /&gt;                        &lt;!-- ClearKey Type (0 = URL, 1 = JSON) --&gt;
+
+    &lt;!-- URL length and URL --&gt;
+    &lt;BS bits="16" string="http://localhost:8584/?keyid=10000000100010001000100000000001&amp;keyid=10000000100010001000100000000002" /&gt;
+  &lt;/DRMInfo&gt;
+
+  &lt;DRMInfo type="pssh" version="0"&gt;
+    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;  &lt;!-- PlayReady SystemID --&gt;
+    &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
+
+    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt;     &lt;!-- PlayReady Header Object Size --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Number of records --&gt;
+
+    &lt;!-- First record --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Rights Management record type --&gt;
+    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;     &lt;!-- Record length --&gt;
+    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;           &lt;!-- WRM in external file --&gt;
+  &lt;/DRMInfo&gt;
+
+  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" &gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" /&gt;
+  &lt;/CrypTrack&gt;
+&lt;/GPACDRM&gt;</code></pre>
+
+          <p>There is an interesting caveat when using our tools to do multi-DRM Common Encryption;  KeyID and decryption key must be the same across all DRMs.  Content samples are only encrypted with a single key/keyID.  Multiple keys can be used to encrypt a single piece of content (rolling keys), but only a single key per individual media sample.  With the PlayReady test server, we can't install our own keys manually.  We must rely on the key generation algorithm.  Luckily, our Clear Key test server is completely under our control and we can simply install the same key generated by the PlayReady algorithm.  In commercial deployments, DRM license servers must support the manual installation of keys so that a single content encryption process can select the keyID and key and then install it across all DRM servers.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
@@ -707,18 +738,27 @@ popd
           </ul>
 
           <h2>dash.js Player</h2>
-          <p>The CableLabs player application is based on the <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a> reference implementation from the DASH Industry Forum</p>
-          Coming Soon
+          <p>The CableLabs player application is based on the <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a> reference implementation from the DASH Industry Forum.  Our version of the player can be found on <a href="https://github.com/greg80303/dash.js">github</a> in the "development" branch.  We've added the following features:</p>
+          <ul>
+            <li><strong>EME Debug Panel</strong>:  This expandable panel shows EME-specific log messages that hightlight the license retrieval process</li>
+            <li><strong>CableLabs Clear Key</strong>:  Processing for the CableLabs-defined Clear Key PSSH and subsequent license retrieval.</li>
+          </ul>
+
           <h2>FAMIUM Player</h2>
-          Coming Soon
+
+          <p>The Fraunhofer FOKUS group has developed their own dashjs-based player application.  They claim to have enchanced the application to facilitate faster switching between different bitrates.  The application also contains links to some sample encrypted media and a graphical dispay that takes you through the various EME events and processes as they occur during playback.</p>
+
           <h2>Microsoft TestDrive Site</h2>
-          Coming Soon
+
+          Microsoft has written an EME test application as part of their <a href="http://ie.microsoft.com/testdrive/Default.html">Test Drive</a> site.  The <a href="http://ie.microsoft.com/testdrive/html5/eme/">HTML5 EME Test Drive application</a> contains both clear and unencrypted adaptive bitrate media that you can use to validate Microsoft PlayReady support on a given browser platform.
 
           <hr class="col-md-12">
 
           <h1 id="browsers">Browsers</h1>
 
-          <h2>Internet Explorer 11 (Windows 8.1)</h2>
+          <h2>Internet Explorer 11</h2>
+
+          Internet Explorer 11 is latest version of Microsoft's internet brower and is only available on Windows 8.1.
 
           <h3>EME API Support</h3>
 
@@ -749,7 +789,8 @@ popd
           <h1 id="servers">License Servers</h1>
 
           <h2>Microsoft PlayReady Test Server</h2>
-          Coming Soon
+
+          Microsoft provides a <a href="http://playready.directtaps.net/pr/svc/rightsmanager.asmx">test license server</a> that is chock full of features needed for testing your browser and CDM.  <a href="http://playready.directtaps.net/pr/doc/customrights/">The documentation page</a> details all of the supported query string arguments for requesting various types of licenses.  Also on this page, you can find the license server's <i>key seed</i> value.  This is the value used in our PlayReadyKeyGen tool to generate keys and checksums that will work with the test license server.  One additional feature of the test server is the ability to specify your own key value (via the <span class="code">ContentKey</span> query string arg).  This is a handy feature when you don't want the license server to select a key based on the key generation algorithm.  However, keep in mind that this does not emulate real-world security, since the key can be seen clearly in the URL request.
 
           <h2>Widevine CableLabs Test Server</h2>
           Coming Soon
@@ -758,8 +799,6 @@ popd
           Coming Soon
 
           <h2>CableLabs ClearKey Test Server</h2>
-
-          <h4>Clear Key Server</h4>
 
           <p>As we showed in a previous section, we can indicate in our 'pssh' the desire to retrieve our Clear Key decryption keys from a remote URL.  We have implemented a very simple server process using <a href="http://nodejs.org/">Node.js</a> to return hard-coded decryption keys based on query string arguments passed in the URL.  The server code itself is extremely simple:</p>
 
@@ -836,7 +875,7 @@ http.createServer(function(req, res) {
             </div>
           </div>
 
-          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application (which may be served from a different host) to retrieve data from the clear key license server.</p>
+          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application, which may be served from a different host, to retrieve data from the clear key license server no matter where it resides.</p>
 
        </div>
       </div>
