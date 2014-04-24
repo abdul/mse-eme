@@ -13,8 +13,8 @@
           <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
 
-  <body>
-    <header class="navbar navbar-default navbar-static-top" role="banner">
+  <body style="padding-top: 70px;">
+    <header class="navbar navbar-default navbar-fixed-top" role="banner">
       <div class="container">
         <div class="navbar-header">
           <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
@@ -28,8 +28,26 @@
         <nav class="collapse navbar-collapse" role="navigation">
           <ul class="nav navbar-nav">
             <li><a href="overview.html">Overview</a></li>
-            <li><a href="creation.html">Content Creation</a></li>
-            <li><a href="playback.html">Playback</a></li>
+            <li class="active dropdown">
+              <a href="creation.html" class="dropdown-toggle" data-toggle="dropdown">Content Creation <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><b>Content Creation</b></li>
+                <li class="divider"></li>
+                <li><a href="creation.html#transcoding">Transcoding/Transrating</a>
+                <li><a href="creation.html#encryption">Encryption</a>
+                <li><a href="creation.html#packaging">DASH Segmenting/Packaging</a>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="playback.html" class="dropdown-toggle" data-toggle="dropdown">Playback <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="playback.html">Playback</a></li>
+                <li class="divider"></li>
+                <li><a href="playback.html#clientapps">Client Player Applications</a>
+                <li><a href="playback.html#browsers">Browsers</a>
+                <li><a href="playback.html#servers">License Servers</a>
+              </ul>
+            </li>
           </ul>
           <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
         </nav>
@@ -38,23 +56,7 @@
 
     <div class="container">
       <div class="row">
-        <div class="col-md-3 bs-docs-sidebar" id="leftCol">
-
-          <div class="well">
-            <ul class="nav nav-list bs-docs-sidenav" id="sidebar">
-              <li><a href="#overview">Overview</a></li>
-            </ul>
-          </div>
-
-        </div>
-        <div class="col-md-9">
-          <h1 id="overview">Overview</h1>
-
-          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>) allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
-
-          <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the current landscape of support for these W3C extensions in the open source and proprietary technology arenas.  More specifically, it contains working examples of content creation and encryption of MPEG DASH content along with subsequent playback of that content on supported web browsers.</p>
-
-          <hr class="col-md-12">
+        <div class="col-md-12">
 
           <h1 id="content-creation">Content Creation</h1>
           <p>This section describes several open source tools along with scripts we have developed to transcode/transrate, encrypt (with one or more DRMs), and perform DASH segmentation/packaging of existing MP4/H.264 content.</p>
@@ -720,160 +722,6 @@ popd
 
           <h3>isobmff-live Profile</h3>
           Coming Soon
-
-          <hr class="col-md-12">
-
-          <h1 id="clientapps">Client Player Applications</h1>
-          <p>A crucial component of the MSE-EME experience is a Javascript application running on the browser that performs the following tasks:</p>
-          <ul>
-            <li>Parsing the DASH manifest (.mpd)</li>
-            <li>Retrieving DASH media files according to detected bandwidth availability</li>
-            <li>Calling MSE APIs to pass media segments into the browser's media engine</li>
-            <li>Calling EME APIs to retrieve licenses and store them in the CDM for decrypting of protected media</li>
-          </ul>
-
-          <h2>dash.js Player</h2>
-          <p>The CableLabs player application is based on the <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a> reference implementation from the DASH Industry Forum.  Our version of the player can be found on <a href="https://github.com/greg80303/dash.js">github</a> in the "development" branch.  We've added the following features:</p>
-          <ul>
-            <li><strong>EME Debug Panel</strong>:  This expandable panel shows EME-specific log messages that hightlight the license retrieval process</li>
-            <li><strong>CableLabs Clear Key</strong>:  Processing for the CableLabs-defined Clear Key PSSH and subsequent license retrieval.</li>
-          </ul>
-
-          <h2>FAMIUM Player</h2>
-
-          <p>The Fraunhofer FOKUS group has developed their own dashjs-based player application.  They claim to have enchanced the application to facilitate faster switching between different bitrates.  The application also contains links to some sample encrypted media and a graphical dispay that takes you through the various EME events and processes as they occur during playback.</p>
-
-          <h2>Microsoft TestDrive Site</h2>
-
-          Microsoft has written an EME test application as part of their <a href="http://ie.microsoft.com/testdrive/Default.html">Test Drive</a> site.  The <a href="http://ie.microsoft.com/testdrive/html5/eme/">HTML5 EME Test Drive application</a> contains both clear and unencrypted adaptive bitrate media that you can use to validate Microsoft PlayReady support on a given browser platform.
-
-          <hr class="col-md-12">
-
-          <h1 id="browsers">Browsers</h1>
-
-          <p>The table below details the various aspects of each browser we have tested as they pertain to support for MSE/EME and playback of encrypted content.</p>
-
-          <table class="table table-bordered">
-            <tbody>
-              <tr>
-                <th>Browser</th>
-                <th>CDMs</th>
-                <th>MSE</th>
-                <th>EME</th>
-              </tr>
-              <tr>
-                <td><img src="images/ie.png" alt="IE Icon"> Internet Explorer 11</td>
-                <td>PlayReady</td>
-                <td>Yes</td>
-                <td>Yes<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
-              </tr>
-              <tr>
-                <td><img src="images/chrome.png" alt="Chrome Icon"> Chrome (Milestone 35)</td>
-                <td>Widevine, ClearKey</td>
-                <td>Yes</td>
-                <td>Yes<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
-              </tr>
-              <tr>
-                <td>FAMIUM (Chromium, Milestone 30)</td>
-                <td>PlayReady</td>
-                <td>Yes</td>
-                <td>Partial<br>- MediaKeys.isTypeSupported() missing<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <hr class="col-md-12">
-
-          <h1 id="servers">License Servers</h1>
-
-          <h2>Microsoft PlayReady Test Server</h2>
-
-          <p>Microsoft provides a <a href="http://playready.directtaps.net/pr/svc/rightsmanager.asmx">test license server</a> that is chock full of features needed for testing your browser and CDM.  <a href="http://playready.directtaps.net/pr/doc/customrights/">The documentation page</a> details all of the supported query string arguments for requesting various types of licenses.  Also on this page, you can find the license server's <i>key seed</i> value.  This is the value used in our PlayReadyKeyGen tool to generate keys and checksums that will work with the test license server.  One additional feature of the test server is the ability to specify your own key value (via the <span class="code">ContentKey</span> query string arg).  This is a handy feature when you don't want the license server to select a key based on the key generation algorithm.  However, keep in mind that this does not emulate real-world security, since the key can be seen clearly in the URL request.</p>
-
-          <h2>Widevine CableLabs Test Server</h2>
-          Coming Soon
-
-          <h2>Adobe Test Server</h2>
-          Coming Soon
-
-          <h2>CableLabs ClearKey Test Server</h2>
-
-          <p>As we showed in a previous section, we can indicate in our 'pssh' the desire to retrieve our Clear Key decryption keys from a remote URL.  We have implemented a very simple server process using <a href="http://nodejs.org/">Node.js</a> to return hard-coded decryption keys based on query string arguments passed in the URL.  The server code itself is extremely simple:</p>
-
-          <div class="panel panel-success">
-            <div class="panel-heading">mp4/clearkey/server/src/clearkey.js</div>
-            <div class="panel-body">
-              <pre><code class="scrollable-code">var https = require('https');
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-
-keys = {
-    '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
-    '10000000100010001000100000000002': new Buffer("04714BD8D7E1F3815FC47D0A834F0E18", 'hex')
-};
-
-var options = {
-    key: fs.readFileSync('security/cl_clearkey-key.pem'),
-    cert: fs.readFileSync('security/cl_clearkey-cert.pem')
-};
-
-var addCORSHeaders = function(res, length) {
-    res.writeHeader(200, {
-        "Content-Length": length,
-        "Content-Type": 'application/json',
-        "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Methods": 'GET, PUT, POST, DELETE, OPTIONS',
-        "Access-Control-Allow-Headers": 'Content-Type, Authorization, Content-Length, X-Requested-Width'});
-};
-
-// Still testing this
-https.createServer(options, function(req, res) {
-    addCORSHeaders(res);
-    res.end("hello world\n");
-
-}).listen(8585);
-
-http.createServer(function(req, res) {
-    var parsed_url = url.parse(req.url, true);
-    var query = parsed_url.query;
-
-    // Validate query string
-    if (query === undefined || query.keyid === undefined) {
-        res.writeHeader(400, "Illegal query string");
-        res.end();
-    }
-
-    var keyIDs = [];
-    if (query.keyid instanceof Array) {
-        keyIDs = query.keyid;
-    } else {
-        keyIDs.push(query.keyid);
-    }
-
-    var jwk_array = [];
-    for (var i = 0; i &lt; keyIDs.length; i++) {
-        var jwk = {
-            kty: "oct",
-            alg: "A128GCM",
-            kid: new Buffer(keyIDs[i], 'hex').toString('base64').replace(/=/g, ""),
-            k: keys[keyIDs[i]].toString('base64').replace(/=/g, "")
-        };
-        jwk_array.push(jwk);
-    }
-    var response = {
-        keys: jwk_array
-    };
-    var json_str_response = JSON.stringify(response);
-    addCORSHeaders(res, json_str_response.length);
-    res.write(json_str_response);
-    res.end();
-
-}).listen(8584);</code></pre>
-            </div>
-          </div>
-
-          <p>You can see from the query string arguments that the server supports querying of multiple key Ids in a single request.  The JSON Web Key syntax supports multiple keys as well, so the server will return exactly the number of keys you requested (assuming the key IDs have been coded into the server).  One other item of note in the server source code is the addition of <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a> headers.  These allow the client application, which may be served from a different host, to retrieve data from the clear key license server no matter where it resides.</p>
 
        </div>
       </div>

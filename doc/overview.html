@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>CableLabs MSE-EME Reference Platform - Software Documentation</title>
+    <meta name="generator" content="CableLabs" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link type="text/css" href="lib/bootstrap-custom/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" href="lib/highlight/styles/github.css" rel="stylesheet">
+    <link type="text/css" href="css/doc.css" rel="stylesheet">
+
+        <!--[if lt IE 9]>
+          <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+
+  <body style="padding-top: 70px;">
+    <header class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="http://www.cablelabs.com" class="navbar-brand">CableLabs</a>
+        </div>
+        <nav class="collapse navbar-collapse" role="navigation">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="overview.html">Overview</a></li>
+            <li class="dropdown">
+              <a href="creation.html" class="dropdown-toggle" data-toggle="dropdown">Content Creation <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="creation.html">Content Creation</a></li>
+                <li class="divider"></li>
+                <li><a href="creation.html#transcoding">Transcoding/Transrating</a>
+                <li><a href="creation.html#encryption">Encryption</a>
+                <li><a href="creation.html#packaging">DASH Segmenting/Packaging</a>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="playback.html" class="dropdown-toggle" data-toggle="dropdown">Playback <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="playback.html">Playback</a></li>
+                <li class="divider"></li>
+                <li><a href="playback.html#clientapps">Client Player Applications</a>
+                <li><a href="playback.html#browsers">Browsers</a>
+                <li><a href="playback.html#servers">License Servers</a>
+              </ul>
+            </li>
+          </ul>
+          <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 id="overview">Overview</h1>
+
+          <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>) allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
+
+          <p>The motivation behind development of the CableLabs MSE-EME Reference Platform is to showcase the current landscape of support for these W3C extensions in the open source and proprietary technology arenas.  More specifically, it contains working examples of content creation and encryption of MPEG DASH content along with subsequent playback of that content on supported web browsers.</p>
+
+       </div>
+      </div>
+    </div>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap-custom/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/highlight/highlight.pack.js"></script>
+    <script type="text/javascript">hljs.initHighlightingOnLoad();</script>
+    <script type='text/javascript'>
+      $(document).ready(function() {
+      });
+    </script>
+  </body>
+</html>
