@@ -27,12 +27,9 @@
         </div>
         <nav class="collapse navbar-collapse" role="navigation">
           <ul class="nav navbar-nav">
-            <li>
-              <a href="#">MP4</a>
-            </li>
-            <li>
-              <a href="#">WebM</a>
-            </li>
+            <li><a href="overview.html">Overview</a></li>
+            <li><a href="creation.html">Content Creation</a></li>
+            <li><a href="playback.html">Playback</a></li>
           </ul>
           <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
         </nav>
@@ -46,14 +43,12 @@
           <div class="well">
             <ul class="nav nav-list bs-docs-sidenav" id="sidebar">
               <li><a href="#overview">Overview</a></li>
-              <li><a href="#content-creation">Content Creation</a></li>
-              <li><a href="#playback">Playback</a></li>
             </ul>
           </div>
 
         </div>
         <div class="col-md-9">
-          <h1 id="sec0">Overview</h1>
+          <h1 id="overview">Overview</h1>
 
           <p>The <abbr title="World Wide Web Consortium">W3C</abbr> is currently developing two extensions to the HTML5 specification.  <abbr title="Media Source Extensions">MSE</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html">Spec</a>) allows playback of adaptive bitrate streams by introducing Javascript APIs that allow player applications to deliver individual video, audio, and data buffers to the browser’s media engine <abbr title="Encrypted Media Extensions">EME</abbr> (<a href="https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html">Spec</a>) allows playback of encrypted media by introducing Javascript APIs that allow player applications to perform encryption key management with a DRM-specific <abbr title="Content Decryption Module">CDM</abbr> embedded within the browser.</p>
 
@@ -756,33 +751,36 @@ popd
 
           <h1 id="browsers">Browsers</h1>
 
-          <h2>Internet Explorer 11</h2>
+          <p>The table below details the various aspects of each browser we have tested as they pertain to support for MSE/EME and playback of encrypted content.</p>
 
-          Internet Explorer 11 is latest version of Microsoft's internet brower and is only available on Windows 8.1.
-
-          <h3>EME API Support</h3>
-
-          <h3>CDM Support</h3>
-
-          <h3>Common File Format</h3>
-
-          <h2>Chrome</h2>
-
-          <h3>EME API Support</h3>
-
-          <h3>CDM Support</h3>
-
-          <h2>FAMIUM Browser</h2>
-
-          <h3>EME API Support</h3>
-
-          <h3>CDM Support</h3>
-
-          <h2>Firefox</h2>
-
-          <h3>EME API Support</h3>
-
-          <h3>CDM Support</h3>
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th>Browser</th>
+                <th>CDMs</th>
+                <th>MSE</th>
+                <th>EME</th>
+              </tr>
+              <tr>
+                <td><img src="images/ie.png" alt="IE Icon"> Internet Explorer 11</td>
+                <td>PlayReady</td>
+                <td>Yes</td>
+                <td>Yes<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
+              </tr>
+              <tr>
+                <td><img src="images/chrome.png" alt="Chrome Icon"> Chrome (Milestone 35)</td>
+                <td>Widevine, ClearKey</td>
+                <td>Yes</td>
+                <td>Yes<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
+              </tr>
+              <tr>
+                <td>FAMIUM (Chromium, Milestone 30)</td>
+                <td>PlayReady</td>
+                <td>Yes</td>
+                <td>Partial<br>- MediaKeys.isTypeSupported() missing<br>- MediaKeyNeededEvent attributes (unstable in the spec)</td>
+              </tr>
+            </tbody>
+          </table>
 
           <hr class="col-md-12">
 
@@ -790,7 +788,7 @@ popd
 
           <h2>Microsoft PlayReady Test Server</h2>
 
-          Microsoft provides a <a href="http://playready.directtaps.net/pr/svc/rightsmanager.asmx">test license server</a> that is chock full of features needed for testing your browser and CDM.  <a href="http://playready.directtaps.net/pr/doc/customrights/">The documentation page</a> details all of the supported query string arguments for requesting various types of licenses.  Also on this page, you can find the license server's <i>key seed</i> value.  This is the value used in our PlayReadyKeyGen tool to generate keys and checksums that will work with the test license server.  One additional feature of the test server is the ability to specify your own key value (via the <span class="code">ContentKey</span> query string arg).  This is a handy feature when you don't want the license server to select a key based on the key generation algorithm.  However, keep in mind that this does not emulate real-world security, since the key can be seen clearly in the URL request.
+          <p>Microsoft provides a <a href="http://playready.directtaps.net/pr/svc/rightsmanager.asmx">test license server</a> that is chock full of features needed for testing your browser and CDM.  <a href="http://playready.directtaps.net/pr/doc/customrights/">The documentation page</a> details all of the supported query string arguments for requesting various types of licenses.  Also on this page, you can find the license server's <i>key seed</i> value.  This is the value used in our PlayReadyKeyGen tool to generate keys and checksums that will work with the test license server.  One additional feature of the test server is the ability to specify your own key value (via the <span class="code">ContentKey</span> query string arg).  This is a handy feature when you don't want the license server to select a key based on the key generation algorithm.  However, keep in mind that this does not emulate real-world security, since the key can be seen clearly in the URL request.</p>
 
           <h2>Widevine CableLabs Test Server</h2>
           Coming Soon
