@@ -1,5 +1,23 @@
 #!/bin/bash
 
+function usage {
+  echo ""
+  echo "Transcode/Transrate Script"
+  echo "usage:"
+  echo "   video_scaled_5bitrates <input_file> <output_dir>"
+}
+
+if [ -z $1 ]; then
+  echo "Must provide input media file"
+  usage
+  exit 1
+fi
+if [ -z $2 ]; then
+  echo "Must provide output directory for transcoded/transrated files"
+  usage
+  exit 1
+fi
+
 mkdir -p $2
 
 avconv -i $1 -vf "scale=w=512:h=288" -codec:v libx264 -profile:v main -level 21 -b:v 360k -codec:a libfdk_aac -profile:a aac_low $2/abr_512x288_h264-360Kb_aac-lc.mp4

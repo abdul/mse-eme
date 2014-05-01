@@ -1,26 +1,49 @@
-#!/bin/bash
+#!/bin/bash 
 
-if [ -z $GPAC_ROOT_DIR ]; then
-  echo "Must set GPAC_ROOT_DIR!"
-  exit
+function usage {
+  echo ""
+  echo "PlayReady Encryption Script"
+  echo "usage:"
+  echo "   encrypt.sh -o <output_directory> -v [4000|4100] [INPUT_FILE]..."
+}
+
+while getopts ":o:v:" opt; do
+  case $opt in
+    o)
+      output_dir=$OPTARG
+      ;;
+    v)
+      pr_wrm_version=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      exit 1
+      ;;
+    :)
+      echo "Missing options argument for -$OPTARG" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [ -z $pr_wrm_version ]; then
+  echo "Must provide PlayReady version argument (either 4000 or 4100)"
+  usage
+  exit 1
 fi
-if [ -z $CONTENT_DIR ]; then
-  echo "Must set CONTENT_DIR!"
-  exit
+if [ -z $output_dir ]; then
+  echo "Must provide output directory for encrypted media files"
+  usage
+  exit 1
 fi
-
-if [ -z $1 ]; then
-  echo "Must provide version argument (either 4000 or 4100)"
-  exit
+if [ -z $@ ]; then
+  echo "No input media files specified!"
+  usage
+  exit 0
 fi
-
-content_root_dir=$CONTENT_DIR
-gpac_bin_dir="$GPAC_ROOT_DIR/bin/gcc"
-export LD_LIBRARY_PATH=$gpac_bin_dir
-
-pushd .
-
-pr_wrm_version=$1
 
 pr_utf16file="wrm_utf16.xml"
 pr_cryptfile="cryptfile"
@@ -35,11 +58,10 @@ pr_total_size=`expr $size + 10`
 sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
   -e "s/___PRHO_SIZE___/$pr_total_size/" \
   -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml > $pr_cryptfile
-$gpac_bin_dir/MP4Box -crypt $pr_cryptfile $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc.mp4 -out $content_root_dir/bbb_720p_h264-2Mb-high-3.1_aac-lc_enc.mp4
-$gpac_bin_dir/MP4Box -crypt $pr_cryptfile $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc.mp4 -out $content_root_dir/bbb_720p_h264-3Mb-high-3.1_aac-lc_enc.mp4
-
+mkdir -p $output_dir
+for file in $@; do
+  MP4Box -crypt $pr_cryptfile $file -out $output_dir/`basename $file`
+done
 rm $pr_cryptfile
 rm $pr_utf16file
-
-popd
 
