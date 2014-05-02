@@ -48,28 +48,6 @@ apitest = function() {
     update_api_status($api_mediakeys_attr, false);
   }
 
-  var $api_setmediakeys = $("#api_setmediakeys");
-  if ("setMediaKeys" in video_element) {
-    update_api_status($api_setmediakeys, true);
-  } else if ("msSetMediaKeys" in video_element) {
-    update_api_status($api_setmediakeys, true);
-    $("#api_setmediakeys_comment").text("Prefixed msSetMediaKeys only");
-  } else if ("WebKitSetMediaKeys" in video_element) {
-    update_api_status($api_setmediakeys, true);
-    $("#api_setmediakeys_comment").text("Prefixed WebKitSetMediaKeys only");
-  } else if ("setMediaKeys" in window) {
-    update_api_status($api_setmediakeys, true);
-    $("#api_setmediakeys_comment").text("Function found in Window, not in HTMLVideoElement");
-  } else if ("msSetMediaKeys" in window) {
-    update_api_status($api_setmediakeys, true);
-    $("#api_setmediakeys_comment").text("Prefixed msSetMediaKeys function found in Window, not in HTMLVideoElement");
-  } else if ("WebKitSetMediaKeys" in window) {
-    update_api_status($api_setmediakeys, true);
-    $("#api_setmediakeys_comment").text("Prefixed WebSetMediaKeys function found in Window, not in HTMLVideoElement");
-  } else {
-    update_api_status($api_setmediakeys, false);
-  }
-
   // Key Systems
   var key_systems = [
     {
@@ -114,9 +92,11 @@ apitest = function() {
   }
 
   // MediaKeys
+  var mk;
   if (supported_system != null) {
     try {
-      var mk = new window[mediakeys](supported_system);
+      mk = new window[mediakeys](supported_system);
+      myfuncs.setmediakeys(mk);
       update_api_status($("#api_mediakeys_construct"), true);
     } catch (ex) {
       if (ex instanceof ReferenceError) {
@@ -127,6 +107,46 @@ apitest = function() {
         $("#api_mediakeys_construct_comment").text("Error = " + ex.name + ". Message = " + ex.message);
       }
     }
+  }
+
+  var $api_setmediakeys = $("#api_setmediakeys");
+  if ("setMediaKeys" in video_element) {
+    update_api_status($api_setmediakeys, true);
+    if (mk) {
+      video_element["setMediaKeys"](mk);
+    }
+  } else if ("msSetMediaKeys" in video_element) {
+    update_api_status($api_setmediakeys, true);
+    $("#api_setmediakeys_comment").text("Prefixed msSetMediaKeys only");
+    if (mk) {
+      video_element["msSetMediaKeys"](mk);
+    }
+  } else if ("WebKitSetMediaKeys" in video_element) {
+    update_api_status($api_setmediakeys, true);
+    $("#api_setmediakeys_comment").text("Prefixed WebKitSetMediaKeys only");
+    if (mk) {
+      video_element["WebKitSetMediaKeys"](mk);
+    }
+  } else if ("setMediaKeys" in window) {
+    update_api_status($api_setmediakeys, true);
+    $("#api_setmediakeys_comment").text("Function found in Window, not in HTMLVideoElement");
+    if (mk) {
+      window["setMediaKeys"](mk);
+    }
+  } else if ("msSetMediaKeys" in window) {
+    update_api_status($api_setmediakeys, true);
+    $("#api_setmediakeys_comment").text("Prefixed msSetMediaKeys function found in Window, not in HTMLVideoElement");
+    if (mk) {
+      window["msSetMediaKeys"](mk);
+    }
+  } else if ("WebKitSetMediaKeys" in window) {
+    update_api_status($api_setmediakeys, true);
+    $("#api_setmediakeys_comment").text("Prefixed WebSetMediaKeys function found in Window, not in HTMLVideoElement");
+    if (mk) {
+      window["WebKitSetMediaKeys"](mk);
+    }
+  } else {
+    update_api_status($api_setmediakeys, false);
   }
 };
 
