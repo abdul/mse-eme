@@ -42,11 +42,6 @@ if [ -z $output_dir ]; then
   usage
   exit 1
 fi
-if [ -z $@ ]; then
-  echo "No media files specified!"
-  usage
-  exit 0
-fi
 
 mkdir -p $output_dir
 

@@ -53,11 +53,6 @@ if [ -z $output_dir ]; then
   usage
   exit 1
 fi
-if [ -z $@ ]; then
-  echo "No input media files specified!"
-  usage
-  exit 0
-fi
 
 cryptfile="cryptfile"
 pr_wrm_version=$1
