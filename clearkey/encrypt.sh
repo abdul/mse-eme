@@ -15,10 +15,13 @@ function usage {
   echo "       to the list of files at the end of the command"
 }
 
-while getopts ":o:v:" opt; do
+while getopts ":o:i:" opt; do
   case $opt in
     o)
       output_dir=$OPTARG
+      ;;
+    i)
+      input_dir=$OPTARG
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2

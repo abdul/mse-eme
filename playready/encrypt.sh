@@ -18,13 +18,16 @@ function usage {
   echo "       to the list of files at the end of the command"
 }
 
-while getopts ":o:v:" opt; do
+while getopts ":o:v:i:" opt; do
   case $opt in
     o)
       output_dir=$OPTARG
       ;;
     v)
       pr_wrm_version=$OPTARG
+      ;;
+    i)
+      input_dir=$OPTARG
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
