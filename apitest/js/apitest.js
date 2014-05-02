@@ -75,17 +75,12 @@ apitest = function() {
                            "<td><span id=\"" + key_systems[i].dom_id + "\">" + "</span></td></tr>");
 
     if (mediakeys_present && istypesupp_present) {
-      if (stdmediakeys_present) {
-        if (MediaKeys.isTypeSupported(key_systems[i].keystring)) {
-          update_api_status($("#" + key_systems[i].dom_id), true);
-          supported_system = key_systems[i].keystring;
-        } else {
-          update_api_status($("#" + key_systems[i].dom_id), false);
-        }
-      } else if (msmediakeys_present) {
-
+      if (window[mediakeys].isTypeSupported(key_systems[i].keystring)) {
+        update_api_status($("#" + key_systems[i].dom_id), true);
+        supported_system = key_systems[i].keystring;
+      } else {
+        update_api_status($("#" + key_systems[i].dom_id), false);
       }
-
     } else {
       update_api_status($("#" + key_systems[i].dom_id), false);
     }
