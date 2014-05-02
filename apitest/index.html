@@ -6,7 +6,7 @@
     <meta name="generator" content="CableLabs" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link type="text/css" href="lib/bootstrap-custom/css/bootstrap.min.css" rel="stylesheet">
-    <link type="text/css" href="apitest.css" rel="stylesheet">
+    <link type="text/css" href="css/apitest.css" rel="stylesheet">
 
         <!--[if lt IE 9]>
           <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -34,11 +34,14 @@
       <div class="row">
         <div class="col-md-12">
 
+          <h4><em>Confidential material under the terms of the Limited Distribution Non-disclosure Agreement between Comcast and CableLabs</em></h4>
+          <hr>
+
           <p>This page tests for the existence of certain Media Source Extensions (MSE) and Encrypted Media Extensions (EME) APIs in the browsers on which it runs.  Please note that the existence of these APIs does not necessarily indicate the existence of all required APIs.  It is merely a general indication of whether or not a particular browser has implemented the extension specifications</p>
 
           <video height="0" width="0" id="test_video"></video>
 
-          <h2>global</h2>
+          <h2>Global</h2>
           <table class="table table-striped">
             <tbody>
               <tr>
@@ -48,8 +51,8 @@
               </tr>
               <tr>
                 <td><pre>MediaKeys</pre></td>
-                <td><span id="api_mediakeys_construct"></span></td>
-                <td id="api_mediakeys_construct_comment"></td>
+                <td><span id="api_mediakeys"></span></td>
+                <td id="api_mediakeys_comment"></td>
               </tr>
             </tbody>
           </table>
@@ -64,63 +67,58 @@
               </tr>
               <tr>
                 <td><pre>mediaKeys</pre></td>
-                <td><span id="api_mediakeys"></span></td>
-                <td id="api_mediakeys_comment"></td>
+                <td><span id="api_mediakeys_attr"></span></td>
+                <td id="api_mediakeys_attr_comment"></td>
               </tr>
               <tr>
-                <td><pre>setMediaKeys(MediaKeys? mediakeys)</pre></td>
+                <td><pre>setMediaKeys(MediaKeys mediakeys)</pre></td>
                 <td><span id="api_setmediakeys"></span></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td><pre>onneedkey</pre></td>
-                <td><span id="api_onneedkey"></span></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td><pre>waitingFor</pre></td>
-                <td><span id="api_waitingfor"></span></td>
-                <td></td>
+                <td id="api_setmediakeys_comment"></td>
               </tr>
             </tbody>
           </table>
-       </div>
+
+          <h2>MediaKeys</h2>
+          <table class="table table-striped">
+            <tbody>
+              <tr>
+                <th>API</th>
+                <th>Supported?</th>
+                <th>Comments</th>
+              </tr>
+              <tr>
+                <td><pre>MediaKeys()</pre></td>
+                <td><span id="api_mediakeys_construct"></span></td>
+                <td id="api_mediakeys_construct_comment"></td>
+              </tr>
+              <tr>
+                <td><pre>isTypeSupported()</pre></td>
+                <td><span id="api_istypesupp"></span></td>
+                <td id="api_istypesupp_comment"></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>Content Decryption Modules (CDM)</h2>
+          <table class="table table-striped">
+            <tbody id="cdm_table">
+              <tr>
+                <th>CDM</th>
+                <th>Key String</th>
+                <th>Supported?</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script type="text/javascript" src="lib/bootstrap-custom/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/apitest.js"></script>
     <script type='text/javascript'>
       $(document).ready(function() {
-        var video_element = $("#test_video").get()[0];
-
-        var update_api_status = function($item, is_present)  {
-          var present = "glyphicon glyphicon-ok green";
-          var missing = "glyphicon glyphicon-remove red";
-          $item.addClass((is_present) ? present : missing);
-        };
-
-        var update_api_comment = function($item, comment) {
-          $item.text(comment);
-        };
-
-        try {
-          var mk = new MediaKeys("org.w3.clearkey");
-          update_api_status($("#api_mediakeys_construct"), true);
-        } catch (ex) {
-          if (ex instanceof ReferenceError) {
-            update_api_status($("#api_mediakeys_construct"), false);
-            update_api_comment($("#api_mediakeys_construct_comment"), "MediaKeys not present");
-          }
-          else if (ex instanceof DOMError) {
-            update_api_status($("#api_mediakeys_construct"), true);
-            update_api_comment($("#api_mediakeys_construct_comment"), "Error = " + ex.name + ". Message = " + ex.message);
-          }
-        }
-
-        update_api_status($("#api_mediakeys"), ("mediaKeys" in window))
-        update_api_status($("#api_setmediakeys"), ("setMediaKeys" in window))
-
+          apitest();
       });
     </script>
   </body>
