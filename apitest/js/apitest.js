@@ -91,7 +91,6 @@ apitest = function() {
   if (supported_system != null) {
     try {
       mk = new window[mediakeys](supported_system);
-      myfuncs.setmediakeys(mk);
       update_api_status($("#api_mediakeys_construct"), true);
     } catch (ex) {
       if (ex instanceof ReferenceError) {
