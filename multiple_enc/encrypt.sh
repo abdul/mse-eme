@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 function usage {
   echo ""
@@ -54,9 +54,8 @@ if [ -z $output_dir ]; then
   exit 1
 fi
 
-cryptfile="cryptfile"
-pr_wrm_version=$1
 pr_utf16file="wrm_utf16.xml"
+pr_cryptfile="cryptfile"
 
 # Remove all leading whitespace and then remove all end of line characters
 # Then convert to UTF-16LE
@@ -67,7 +66,7 @@ pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
 pr_total_size=`expr $size + 10`
 sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
   -e "s/___PRHO_SIZE___/$pr_total_size/" \
-  -e "s/___WRM_FILE___/$pr_utf16file/" cenc_pr_ck.xml > $cryptfile
+  -e "s/___WRM_FILE___/$pr_utf16file/" cenc_pr_ck.xml > $pr_cryptfile
 
 mkdir -p $output_dir
 
@@ -84,6 +83,6 @@ for file in $@; do
 done
 
 rm $pr_utf16file
-rm $cryptfile
+rm $pr_cryptfile
 
 
