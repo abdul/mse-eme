@@ -38,8 +38,8 @@ public class WidevineKeyRequest {
     private static final String CLIENT_ID = null;
     private static final String[] DRM_TYPES = { "WIDEVINE" };
     
-    private static final String CABLELABS_SERVER_URL = "http://license.widevine.com/cenc/getlicense/cablelabs";
-    private static final String TEST_SERVER_URL = "http://license.widevine.com/cenc/getlicense/widevine_test";
+    private static final String CABLELABS_SERVER_URL = "https://license.widevine.com/cenc/getcontentkey/cablelabs";
+    private static final String TEST_SERVER_URL      = "https://license.widevine.com/cenc/getcontentkey/widevine_test";
     
     private static final byte[] CABLELABS_IV = { (byte)0x99, (byte)0xce, (byte)0xac, (byte)0x24,
                                                  (byte)0x52, (byte)0xb5, (byte)0x7b, (byte)0x96,
@@ -60,24 +60,18 @@ public class WidevineKeyRequest {
         
         int i;
 
-        // Make sure we have at least 3 args
-        if (args.length < 3) {
-            usage();
-            System.exit(1);
-        }
-        
-        String content_id_str = args[0];
-        
         // Map track type to track ID
         Map<TrackType, String> tracks = new HashMap<TrackType, String>();
         
         // Parse arguments
-        for (i = 1; i < args.length; i++) {
+        String content_id_str = args[0];
+        for (i = 0; i < args.length; i++) {
             
             // Parse options
             if (args[i].startsWith("-")) {
                 if (args[i].equals("-s")) {
                     sign_request = true;
+                    content_id_str = args[++i];
                 }
                 else {
                     usage();
@@ -140,9 +134,9 @@ public class WidevineKeyRequest {
             // Create message signature
             try {
                 MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-                sha1.update(jsonRequestMessageB64.getBytes());
+                sha1.update(jsonRequestMessage.getBytes());
                 byte[] sha1_b = sha1.digest();
-                System.out.println("SHA-1 hash of base64 'request' field = 0x" + Hex.encodeHexString(sha1_b));
+                System.out.println("SHA-1 hash of JSON request message = 0x" + Hex.encodeHexString(sha1_b));
                 
                 // Use AES/CBC/PKCS5Padding with CableLabs Key and InitVector
                 SecretKeySpec keySpec = new SecretKeySpec(CABLELABS_KEY, "AES");
