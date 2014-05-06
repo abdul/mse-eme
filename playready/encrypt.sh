@@ -53,6 +53,11 @@ if [ -z $output_dir ]; then
   usage
   exit 1
 fi
+if [ -z $input_dir -a ${#@} -eq 0 ]; then
+  echo "No input media files specified!"
+  usage
+  exit 0
+fi
 
 pr_utf16file="wrm_utf16.xml"
 pr_cryptfile="cryptfile"

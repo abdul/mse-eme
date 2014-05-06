@@ -21,28 +21,33 @@ import org.apache.commons.codec.binary.Base64;
 
 public class PlayReadyKeygen {
     
+    private static final int DRM_AES_KEYSIZE_128 = 16;
+    private static final String DEFAULT_KEY_SEED = "XVBovsmzhP9gRIZxWfFta3VVRPzVEWmJsazEJ46I";
+
     private static void usage() {
-        System.out.println("usage:  PlayReadyKeygen <key_id> <key_seed>");
+        System.out.println("usage:  PlayReadyKeygen <key_id> [<key_seed>]");
         System.out.println("\t <key_id> is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
         System.out.println("\t\t where 'x' is any hexadecimal digit in the range [0-9a-f] (case insensitive)");
-        System.out.println("\t <key_seed> is a 30-byte key seed value in Base64 notation");
+        System.out.println("\t <key_seed> is a 30-byte key seed value in Base64 notation.  If not provided, the default");
+        System.out.println("\t\t value of the Microsoft test server is used (" + DEFAULT_KEY_SEED + ")");
     }
     
-    private static final int DRM_AES_KEYSIZE_128 = 16;
-
     /**
      * @param args
      */
     public static void main(String[] args) {
         
-        // Make sure we have 2 args
-        if (args.length < 2) {
+        // Make sure we have at least 1 arg
+        if (args.length < 1) {
             usage();
             System.exit(1);
         }
         
         String key_id_str = args[0];
-        String key_seed_str = args[1];
+        String key_seed_str = DEFAULT_KEY_SEED;
+        if (args.length > 1) {
+            key_seed_str = args[1];
+        }
 
         // Check for valid UUID format of key ID
         if (key_id_str.length() != 36 ||
@@ -65,16 +70,16 @@ public class PlayReadyKeygen {
         }
         
         // Key ID in the PlayReady Header object must be little endian 
-        byte[] ms_le_key_id = new byte[key_id.length];
+        byte[] ms_key_id = new byte[key_id.length];
         int le_pos = 0;
         for (int j = 4; j > 0; j--)
-            ms_le_key_id[le_pos++] = key_id[j-1];
+            ms_key_id[le_pos++] = key_id[j-1];
         for (int j = 6; j > 4; j--)
-            ms_le_key_id[le_pos++] = key_id[j-1];
+            ms_key_id[le_pos++] = key_id[j-1];
         for (int j = 8; j > 6; j--)
-            ms_le_key_id[le_pos++] = key_id[j-1];
+            ms_key_id[le_pos++] = key_id[j-1];
         for (int j = 8; j < 16; j++)
-            ms_le_key_id[le_pos++] = key_id[j];
+            ms_key_id[le_pos++] = key_id[j];
         
         // Ensure that key seed is at least 30 bytes in length
         byte[] key_seed_raw = Base64.decodeBase64(key_seed_str);
@@ -95,7 +100,7 @@ public class PlayReadyKeygen {
             //     - Key ID
             MessageDigest sha256_a = MessageDigest.getInstance("SHA-256");
             sha256_a.update(key_seed);
-            sha256_a.update(ms_le_key_id);
+            sha256_a.update(ms_key_id);
             byte[] sha_a = sha256_a.digest();
             
             // Second hash is
@@ -104,7 +109,7 @@ public class PlayReadyKeygen {
             //     - Key Seed
             MessageDigest sha256_b = MessageDigest.getInstance("SHA-256");
             sha256_b.update(key_seed);
-            sha256_b.update(ms_le_key_id);
+            sha256_b.update(ms_key_id);
             sha256_b.update(key_seed);
             byte[] sha_b = sha256_b.digest();
             
@@ -115,9 +120,9 @@ public class PlayReadyKeygen {
             //     - Key ID
             MessageDigest sha256_c = MessageDigest.getInstance("SHA-256");
             sha256_c.update(key_seed);
-            sha256_c.update(ms_le_key_id);
+            sha256_c.update(ms_key_id);
             sha256_c.update(key_seed);
-            sha256_c.update(ms_le_key_id);
+            sha256_c.update(ms_key_id);
             byte[] sha_c = sha256_c.digest();
             
             for (int i = 0; i < DRM_AES_KEYSIZE_128; i++) {
@@ -138,7 +143,7 @@ public class PlayReadyKeygen {
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             SecretKeySpec key = new SecretKeySpec(contentKey, "AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            checksum = Arrays.copyOf(cipher.doFinal(ms_le_key_id), 8);
+            checksum = Arrays.copyOf(cipher.doFinal(ms_key_id), 8);
         }
         catch (NoSuchAlgorithmException e) {
             System.out.println("Java Virtual Machine does not support AES/ECB cipher!");
@@ -169,8 +174,9 @@ public class PlayReadyKeygen {
         System.out.println("===============================================");
         System.out.println("Content key ID = ");
         System.out.println("\t0x" + DatatypeConverter.printHexBinary(key_id));
-        System.out.println("\t0x" + DatatypeConverter.printHexBinary(ms_le_key_id) + " (little endian)");
-        System.out.println("\t" + Base64.encodeBase64String(ms_le_key_id) + " (Base64, little endian)");
+        System.out.println("\t0x" + DatatypeConverter.printHexBinary(ms_key_id) + " (MS binary)");
+        System.out.println("\t" + Base64.encodeBase64String(key_id) + " (Base64)");
+        System.out.println("\t" + Base64.encodeBase64String(ms_key_id) + " (Base64, MS binary)");
         System.out.println("Content key = ");
         System.out.println("\t0x" + DatatypeConverter.printHexBinary(contentKey));
         System.out.println("\t" + Base64.encodeBase64String(contentKey) + " (Base64)");

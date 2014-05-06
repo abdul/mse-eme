@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 function usage {
   echo ""
@@ -50,7 +50,7 @@ if [ -z $profile ]; then
   usage
   exit 1
 fi
-if [ -z $@ ]; then
+if [ ${#@} -eq 0 ]; then
   echo "No input media files specified!"
   usage
   exit 0

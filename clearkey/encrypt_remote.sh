@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash 
 
 function usage {
   echo ""
-  echo "CableLabs ClearKey Encryption Script"
+  echo "CableLabs ClearKey (Remote) Encryption Script"
   echo "usage:"
   echo "   encrypt.sh -o <output_directory> [-i <input_directory>] [INPUT_FILE]..."
   echo ""
@@ -42,18 +42,25 @@ if [ -z $output_dir ]; then
   usage
   exit 1
 fi
+if [ -z $input_dir -a ${#@} -eq 0 ]; then
+  echo "No input media files specified!"
+  usage
+  exit 0
+fi
 
 mkdir -p $output_dir
+
+ck_cryptfile="clearkey_remote_cenc.xml"
 
 # Encrypt all files in optional input directory
 if [ ! -z $input_dir ]; then
   for file in `ls $input_dir`; do
-    MP4Box -crypt $pr_cryptfile $input_dir/$file -out $output_dir/`basename $file`
+    MP4Box -crypt $ck_cryptfile $input_dir/$file -out $output_dir/`basename $file`
   done
 fi
 
 # Encrypt individual files specified at the end of the command
 for file in $@; do
-  MP4Box -crypt clearkey_cenc.xml $file -out $output_dir/`basename $file`
+  MP4Box -crypt $ck_cryptfile $file -out $output_dir/`basename $file`
 done
 

@@ -407,28 +407,30 @@ Transcoding successful:
           <p>Microsoft has made a <a href="http://playready.directtaps.net/pr/doc/customrights/">test license server</a> available for developers who wish to test their implementations.  This server can accept query string arguments that apply different attributes to the returned license based on the desired content rights.  Since we can not store our own encryption keys in the test license server, we need a way to ensure that the keys we use to encrypt our content will be the same keys that are returned by the license server upon playback.  Microsoft has defined an algorithm (detailed at the end of <a href="http://download.microsoft.com/download/2/0/2/202E5BD8-36C6-4DB8-9178-12472F8B119E/PlayReady%20Header%20Object%204-15-2013.docx">this document</a> in the section titled <b>Content Key Algorithm</b>) that developers can use to generate their own keys based on a unique <i>key seed</i> assigned to the server and a user-defined <i>key ID</i>.  CableLabs has created a Java application that will generate encryption keys according to this algorithm along with a few other crucial pieces of data required for the encyption process.  The tool is located in <span class="code">mp4/playready/keygen/PlayReadyKeygen.jar</span> in the software artifacts repository.</p>
 
           <pre><code>$ java -jar PlayReadyKeygen.jar
-usage:  PlayReadyKeygen &lt;key_id&gt; &lt;key_seed&gt;
-   &lt;key_id&gt; is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-     where 'x' is any hexadecimal digit in the range [0-9a-f] (case insensitive)
-   &lt;key_seed&gt; is a 30-byte key seed value in Base64 notation</code></pre>
+usage:  PlayReadyKeygen <key_id> [<key_seed>]
+   <key_id> is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      where 'x' is any hexadecimal digit in the range [0-9a-f] (case insensitive)
+   <key_seed> is a 30-byte key seed value in Base64 notation.  If not provided, the default
+      value of the Microsoft test server is used (XVBovsmzhP9gRIZxWfFta3VVRPzVEWmJsazEJ46I)</pre></code>
 
           <p>Here is an actual example showing the output from the tool using the key seed value from the Microsoft test server.  We'll discuss how to use all of these values to encrypt your own content in the next section.</p>
 
-          <pre><code>java -jar PlayReadyKeygen.jar a1b1c1d1-a2b2-a3b3-a4b4-a5b5c5d5e5f5 XVBovsmzhP9gRIZxWfFta3VVRPzVEWmJsazEJ46I
+          <pre><code>java -jar PlayReadyKeygen.jar a1b1c1d1-a2b2-a3b3-a4b4-a5b5c5d5e5f5
 ===============================================
-Content key ID =
+Content key ID = 
   0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5
-  0xD1C1B1A1B2A2B3A3A4B4A5B5C5D5E5F5 (little endian)
-  0cGxobKis6OktKW1xdXl9Q== (Base64, little endian)
-Content key =
+  0xD1C1B1A1B2A2B3A3A4B4A5B5C5D5E5F5 (MS binary)
+  obHB0aKyo7OktKW1xdXl9Q== (Base64)
+  0cGxobKis6OktKW1xdXl9Q== (Base64, MS binary)
+Content key = 
   0x2539FA84B987416009A7FBBA11B239AB
   JTn6hLmHQWAJp/u6EbI5qw== (Base64)
-Checksum =
+Checksum = 
   0x6DBA75394ADDB4C2
   bbp1OUrdtMI= (Base64)
-IV =
-  0x7F068B465B6CF53A
-  fwaLRlts9To= (Base64)
+IV = 
+  0x636D9BFB1DFC682E
+  Y22b+x38aC4= (Base64)
 ===============================================</code></pre>
 
           <h4>PlayReady Header Object</h4>
@@ -444,12 +446,11 @@ IV =
       &lt;KEYLEN&gt;16&lt;/KEYLEN&gt;
       &lt;ALGID&gt;AESCTR&lt;/ALGID&gt;
     &lt;/PROTECTINFO&gt;
-    &lt;KID&gt;0cGxobKis6OktKW1xdXl9Q==&lt;/KID&gt;
-    &lt;CHECKSUM&gt;bbp1OUrdtMI=&lt;/CHECKSUM&gt;
+    &lt;KID&gt;AAAAEAAQABAQABAAAAAAAQ==&lt;/KID&gt;
+    &lt;CHECKSUM&gt;5TzIYQ2hrOY=&lt;/CHECKSUM&gt;
     &lt;LA_URL&gt;http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&amp;amp;UseSimpleNonPersistentLicense=1&lt;/LA_URL&gt;
   &lt;/DATA&gt;
-&lt;/WRMHEADER&gt;
-              </code></pre>
+&lt;/WRMHEADER&gt;</code></pre>
             </div>
           </div>
 
@@ -475,21 +476,20 @@ D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
             <div class="panel-body">
               <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
   &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;          &lt;!-- PlayReady SystemID --&gt;
-
+    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;  &lt;!-- PlayReady SystemID --&gt;
     &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
 
-    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt; &lt;!-- PlayReady Header Object Size --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;               &lt;!-- Number of records --&gt;
+    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt;     &lt;!-- PlayReady Header Object Size --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Number of records --&gt;
 
     &lt;!-- First record --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;               &lt;!-- Rights Management record type --&gt;
-    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;  &lt;!-- Record length --&gt;
-    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;          &lt;!-- WRM in external file --&gt;
+    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Rights Management record type --&gt;
+    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;     &lt;!-- Record length --&gt;
+    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;           &lt;!-- WRM in external file --&gt;
   &lt;/DRMInfo&gt;
 
-  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7F068B465B6CF53A" saiSavedBox="senc" &gt;
-    &lt;key KID="0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5" value="0x2539FA84B987416009A7FBBA11B239AB" /&gt;
+  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x11CB1F13C2DB205A" saiSavedBox="senc" &gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" /&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
             </div>
@@ -502,92 +502,7 @@ D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
           <div class="panel panel-success">
             <div class="panel-heading">mp4/playready/encrypt.sh</div>
             <div class="panel-body">
-              <pre><code class="scrollable-code"> #!/bin/bash 
-
-function usage {
-  echo ""
-  echo "PlayReady Encryption Script"
-  echo "usage:"
-  echo "   encrypt.sh -o <output_directory> -v [4000|4100] [-i <input_directory>] [INPUT_FILE]..."
-  echo ""
-  echo "OPTIONS"
-  echo "  -o"
-  echo "       The output directory where encrypted files will be written"
-  echo ""
-  echo "  -v"
-  echo "       The PlayReady Header Object version.  Must be either 4000 (4.0.0.0) or 4100 (4.1.0.0)"
-  echo ""
-  echo "  -i"
-  echo "       All files in the given directory will be encrypted.  Can be used instead of or in addition"
-  echo "       to the list of files at the end of the command"
-}
-
-while getopts ":o:v:i:" opt; do
-  case $opt in
-    o)
-      output_dir=$OPTARG
-      ;;
-    v)
-      pr_wrm_version=$OPTARG
-      ;;
-    i)
-      input_dir=$OPTARG
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" &gt;&amp;2
-      usage
-      exit 1
-      ;;
-    :)
-      echo "Missing options argument for -$OPTARG" &gt;&amp;2
-      usage
-      exit 1
-      ;;
-  esac
-done
-shift $((OPTIND - 1))
-
-if [ -z $pr_wrm_version ]; then
-  echo "Must provide PlayReady version argument (either 4000 or 4100)"
-  usage
-  exit 1
-fi
-if [ -z $output_dir ]; then
-  echo "Must provide output directory for encrypted media files"
-  usage
-  exit 1
-fi
-
-pr_utf16file="wrm_utf16.xml"
-pr_cryptfile="cryptfile"
-
-# Remove all leading whitespace and then remove all end of line characters
-# Then convert to UTF-16LE
-sed 's/^[ \t]*//' playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\n' | iconv -f UTF-8 -t UTF-16LE &gt; $pr_utf16file
-
-# Grab file size and insert into our crypt file template
-pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
-pr_total_size=`expr $size + 10`
-sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
-  -e "s/___PRHO_SIZE___/$pr_total_size/" \
-  -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml &gt; $pr_cryptfile
-
-mkdir -p $output_dir
-
-# Encrypt all files in optional input directory
-if [ ! -z $input_dir ]; then
-  for file in `ls $input_dir`; do
-    MP4Box -crypt $pr_cryptfile $input_dir/$file -out $output_dir/`basename $file`
-  done
-fi
-
-# Encrypt individual files specified at the end of the command
-for file in $@; do
-  MP4Box -crypt $pr_cryptfile $file -out $output_dir/`basename $file`
-done
-
-rm $pr_cryptfile
-rm $pr_utf16file
+              <pre><code class="scrollable-code">
               </code></pre>
             </div>
           </div>
@@ -662,7 +577,7 @@ rm $pr_utf16file
   &lt;/DRMInfo&gt;
 
   &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" &gt;
-    &lt;key KID="0x10000000100010001000100000000001" value="0x04714BD8D7E1F3815FC47D0A834F0E17" /&gt;
+    &lt;key KID="0x10000000100010001000100000000002" value="0x07E4D653CFB45C66158D93FFCE422907" /&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
             </div>
@@ -678,7 +593,10 @@ rm $pr_utf16file
 
           <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content;  you just add multiple <span class="code">&lt;DRMInfo&gt;</span> elements to the cryptfile.  Each one will introduce a new 'pssh' box into the content.</p>
 
-          <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+          <div class="panel panel-success">
+            <div class="panel-heading">mp4/multiple_enc/cenc_pr_ck.xml</div>
+            <div class="panel-body">
+              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
   &lt;DRMInfo type="pssh" version="0"&gt;
     &lt;BS ID128="00000000000000000000000000000000" /&gt;  &lt;!-- ClearKey SystemID --&gt;
     &lt;BS bits="8" value="0" /&gt;                        &lt;!-- ClearKey Type (0 = URL, 1 = JSON) --&gt;
@@ -704,6 +622,8 @@ rm $pr_utf16file
     &lt;key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" /&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
+            </div>
+          </div>
 
           <p>There is an interesting caveat when using our tools to do multi-DRM Common Encryption;  KeyID and decryption key must be the same across all DRMs.  Content samples are only encrypted with a single key/keyID.  Multiple keys can be used to encrypt a single piece of content (rolling keys), but only a single key per individual media sample.  With the PlayReady test server, we can't install our own keys manually.  We must rely on the key generation algorithm.  Luckily, our Clear Key test server is completely under our control and we can simply install the same key generated by the PlayReady algorithm.  In commercial deployments, DRM license servers must support the manual installation of keys so that a single content encryption process can select the keyID and key and then install it across all DRM servers.</p>
 
