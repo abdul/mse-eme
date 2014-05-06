@@ -407,30 +407,31 @@ Transcoding successful:
           <p>Microsoft has made a <a href="http://playready.directtaps.net/pr/doc/customrights/">test license server</a> available for developers who wish to test their implementations.  This server can accept query string arguments that apply different attributes to the returned license based on the desired content rights.  Since we can not store our own encryption keys in the test license server, we need a way to ensure that the keys we use to encrypt our content will be the same keys that are returned by the license server upon playback.  Microsoft has defined an algorithm (detailed at the end of <a href="http://download.microsoft.com/download/2/0/2/202E5BD8-36C6-4DB8-9178-12472F8B119E/PlayReady%20Header%20Object%204-15-2013.docx">this document</a> in the section titled <b>Content Key Algorithm</b>) that developers can use to generate their own keys based on a unique <i>key seed</i> assigned to the server and a user-defined <i>key ID</i>.  CableLabs has created a Java application that will generate encryption keys according to this algorithm along with a few other crucial pieces of data required for the encyption process.  The tool is located in <span class="code">mp4/playready/keygen/PlayReadyKeygen.jar</span> in the software artifacts repository.</p>
 
           <pre><code>$ java -jar PlayReadyKeygen.jar
-usage:  PlayReadyKeygen <key_id> [<key_seed>]
-   <key_id> is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+usage:  PlayReadyKeygen &lt;key_id&gt; [&lt;key_seed&gt;]
+   &lt;key_id&gt; is a UUID representing the Key ID in the form xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       where 'x' is any hexadecimal digit in the range [0-9a-f] (case insensitive)
-   <key_seed> is a 30-byte key seed value in Base64 notation.  If not provided, the default
+   &lt;key_seed&gt; is a 30-byte key seed value in Base64 notation.  If not provided, the default
       value of the Microsoft test server is used (XVBovsmzhP9gRIZxWfFta3VVRPzVEWmJsazEJ46I)</pre></code>
 
           <p>Here is an actual example showing the output from the tool using the key seed value from the Microsoft test server.  We'll discuss how to use all of these values to encrypt your own content in the next section.</p>
 
-          <pre><code>java -jar PlayReadyKeygen.jar a1b1c1d1-a2b2-a3b3-a4b4-a5b5c5d5e5f5
+          <pre><code>java -jar PlayReadyKeygen.jar 10000000-1000-1000-1000-100000000001
 ===============================================
 Content key ID = 
-  0xA1B1C1D1A2B2A3B3A4B4A5B5C5D5E5F5
-  0xD1C1B1A1B2A2B3A3A4B4A5B5C5D5E5F5 (MS binary)
-  obHB0aKyo7OktKW1xdXl9Q== (Base64)
-  0cGxobKis6OktKW1xdXl9Q== (Base64, MS binary)
+  0x10000000100010001000100000000001
+  0x00000010001000101000100000000001 (MS binary)
+  EAAAABAAEAAQABAAAAAAAQ== (Base64)
+  AAAAEAAQABAQABAAAAAAAQ== (Base64, MS binary)
 Content key = 
-  0x2539FA84B987416009A7FBBA11B239AB
-  JTn6hLmHQWAJp/u6EbI5qw== (Base64)
+  0x3A2A1B68DD2BD9B2EEB25E84C4776668
+  OiobaN0r2bLusl6ExHdmaA== (Base64)
 Checksum = 
-  0x6DBA75394ADDB4C2
-  bbp1OUrdtMI= (Base64)
+  0xE53CC8610DA1ACE6
+  5TzIYQ2hrOY= (Base64)
 IV = 
-  0x636D9BFB1DFC682E
-  Y22b+x38aC4= (Base64)
+  0xCB3CA34344ED1FE2
+  yzyjQ0TtH+I= (Base64)
+
 ===============================================</code></pre>
 
           <h4>PlayReady Header Object</h4>
