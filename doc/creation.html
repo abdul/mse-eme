@@ -502,16 +502,27 @@ D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
           <div class="panel panel-success">
             <div class="panel-heading">mp4/playready/encrypt.sh</div>
             <div class="panel-body">
-              <pre><code class="scrollable-code">#!/bin/bash
+              <pre><code class="scrollable-code"> #!/bin/bash 
 
 function usage {
   echo ""
   echo "PlayReady Encryption Script"
   echo "usage:"
-  echo "   encrypt.sh -o &lt;output_directory&gt; -v [4000|4100] [INPUT_FILE]..."
+  echo "   encrypt.sh -o <output_directory> -v [4000|4100] [-i <input_directory>] [INPUT_FILE]..."
+  echo ""
+  echo "OPTIONS"
+  echo "  -o"
+  echo "       The output directory where encrypted files will be written"
+  echo ""
+  echo "  -v"
+  echo "       The PlayReady Header Object version.  Must be either 4000 (4.0.0.0) or 4100 (4.1.0.0)"
+  echo ""
+  echo "  -i"
+  echo "       All files in the given directory will be encrypted.  Can be used instead of or in addition"
+  echo "       to the list of files at the end of the command"
 }
 
-while getopts ":o:v:" opt; do
+while getopts ":o:v:i:" opt; do
   case $opt in
     o)
       output_dir=$OPTARG
@@ -519,13 +530,16 @@ while getopts ":o:v:" opt; do
     v)
       pr_wrm_version=$OPTARG
       ;;
+    i)
+      input_dir=$OPTARG
+      ;;
     \?)
-      echo "Invalid option: -$OPTARG" >&2
+      echo "Invalid option: -$OPTARG" &gt;&amp;2
       usage
       exit 1
       ;;
     :)
-      echo "Missing options argument for -$OPTARG" >&2
+      echo "Missing options argument for -$OPTARG" &gt;&amp;2
       usage
       exit 1
       ;;
@@ -543,29 +557,35 @@ if [ -z $output_dir ]; then
   usage
   exit 1
 fi
-if [ -z $@ ]; then
-  echo "No input media files specified!"
-  usage
-  exit 0
-fi
 
 pr_utf16file="wrm_utf16.xml"
 pr_cryptfile="cryptfile"
 
 # Remove all leading whitespace and then remove all end of line characters
 # Then convert to UTF-16LE
-sed 's/^[ \t]*//' playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\n' | iconv -f UTF-8 -t UTF-16LE > $pr_utf16file
+sed 's/^[ \t]*//' playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\n' | iconv -f UTF-8 -t UTF-16LE &gt; $pr_utf16file
 
 # Grab file size and insert into our crypt file template
 pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
 pr_total_size=`expr $size + 10`
 sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
   -e "s/___PRHO_SIZE___/$pr_total_size/" \
-  -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml > $pr_cryptfile
+  -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml &gt; $pr_cryptfile
+
 mkdir -p $output_dir
+
+# Encrypt all files in optional input directory
+if [ ! -z $input_dir ]; then
+  for file in `ls $input_dir`; do
+    MP4Box -crypt $pr_cryptfile $input_dir/$file -out $output_dir/`basename $file`
+  done
+fi
+
+# Encrypt individual files specified at the end of the command
 for file in $@; do
   MP4Box -crypt $pr_cryptfile $file -out $output_dir/`basename $file`
 done
+
 rm $pr_cryptfile
 rm $pr_utf16file
               </code></pre>
