@@ -1,4 +1,6 @@
 
+// Confidential material under the terms of the Limited Distribution Non-disclosure
+// Agreement between CableLabs and Comcast
 
 apitest = function() {
 
@@ -113,7 +115,7 @@ apitest = function() {
     update_api_status($api_setmediakeys, true);
     $("#api_setmediakeys_comment").text("Prefixed msSetMediaKeys only");
     if (mk) {
-      video_element.msSetMediaKeys(mk);
+      video_element["msSetMediaKeys"](mk);
     }
   } else if ("WebKitSetMediaKeys" in video_element) {
     update_api_status($api_setmediakeys, true);

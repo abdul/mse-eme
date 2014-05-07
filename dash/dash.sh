@@ -1,5 +1,8 @@
 #!/bin/bash 
 
+# Confidential material under the terms of the Limited Distribution Non-disclosure
+# Agreement between CableLabs and Comcast
+
 function usage {
   echo ""
   echo "MP4Box DASH Segmenter/Packager"
@@ -11,6 +14,18 @@ function usage {
   echo " options.  If you have multiplexed input files, you must use the #video"
   echo " and #audio attributes to demux the input and provide separate audio and"
   echo " and video Representations in the manifest"
+  echo ""
+  echo "OPTIONS"
+  echo "  -o"
+  echo "       The output directory where media files and DASH manifest will be written"
+  echo ""
+  echo "  -p"
+  echo "       The DASH Profile to use.  'onDemand' will generate a single segment file"
+  echo "       (fragmented MP4) for each representation. 'live' will generate multiple"
+  echo "       segment files along with an initialization segment for each representation"
+  echo ""
+  echo "  -m"
+  echo "       Optional manifest file name.  Default is 'dash.mpd'"
 }
 
 mpd_file="dash.mpd"

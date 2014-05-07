@@ -1,5 +1,8 @@
 #!/bin/bash 
 
+# Confidential material under the terms of the Limited Distribution Non-disclosure
+# Agreement between CableLabs and Comcast
+
 function usage {
   echo ""
   echo "CableLabs ClearKey (JSON) Encryption Script"

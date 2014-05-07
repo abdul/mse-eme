@@ -1,3 +1,6 @@
+<!-- Confidential material under the terms of the Limited Distribution Non-disclosure
+     Agreement between CableLabs and Comcast -->
+
 <GPACDRM type="CENC AES-CTR">
   <DRMInfo type="pssh" version="0">
     <BS ID128="9a04f07998404286ab92e65be0885f95" />  <!-- PlayReady SystemID -->

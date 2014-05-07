@@ -1,3 +1,5 @@
+// Confidential material under the terms of the Limited Distribution Non-disclosure
+// Agreement between CableLabs and Comcast
 
 var https = require('https');
 var http = require('http');
