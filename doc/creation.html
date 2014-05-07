@@ -5,52 +5,63 @@
     <title>CableLabs MSE-EME Reference Platform - Software Documentation</title>
     <meta name="generator" content="CableLabs" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link type="text/css" href="lib/bootstrap-custom/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" href="lib/bootstrap-custom/css/bootstrap.css" rel="stylesheet">
     <link type="text/css" href="lib/highlight/styles/github.css" rel="stylesheet">
     <link type="text/css" href="css/doc.css" rel="stylesheet">
+  </head>
 
         <!--[if lt IE 9]>
           <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
         <![endif]-->
 
-  <body style="padding-top: 70px;">
-    <header class="navbar navbar-default navbar-fixed-top" role="banner">
+  <body style="padding-top: 100px;">
+    <header class="navbar navbar-custom navbar-fixed-top" role="banner">
       <div class="container">
-        <div class="navbar-header">
-          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a href="http://www.cablelabs.com" class="navbar-brand">CableLabs</a>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="navbar-header">
+              <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a href="http://www.cablelabs.com" class="navbar-brand"><img src="images/CAB_logo_BW.png" alt="CableLabs"></a>
+            </div>
+            <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
+          </div>
         </div>
-        <nav class="collapse navbar-collapse" role="navigation">
-          <ul class="nav navbar-nav">
-            <li><a href="overview.html">Overview</a></li>
-            <li class="active dropdown">
-              <a href="creation.html" class="dropdown-toggle" data-toggle="dropdown">Content Creation <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><b>Content Creation</b></li>
-                <li class="divider"></li>
-                <li><a href="creation.html#transcoding">Transcoding/Transrating</a>
-                <li><a href="creation.html#encryption">Encryption</a>
-                <li><a href="creation.html#packaging">DASH Segmenting/Packaging</a>
+        <div class="row">
+          <div class="col-md-12">
+            <nav class="collapse navbar-collapse" role="navigation">
+              <ul class="nav navbar-nav">
+                <li class="dropdown">
+                  <a href="overview.html">Overview</a>
+                </li>
+                <li class="dropdown active-page">
+                  <a href="#" class="dropdown-toggle current" data-toggle="dropdown">Content Creation <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><b>Content Creation</b></li>
+                    <li class="divider"></li>
+                    <li><a href="creation.html#transcoding">Transcoding/Transrating</a>
+                    <li><a href="creation.html#encryption">Encryption</a>
+                    <li><a href="creation.html#packaging">DASH Segmenting/Packaging</a>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Playback <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="playback.html">Playback</a></li>
+                    <li class="divider"></li>
+                    <li><a href="playback.html#clientapps">Client Player Applications</a>
+                    <li><a href="playback.html#browsers">Browsers</a>
+                    <li><a href="playback.html#servers">License Servers</a>
+                  </ul>
+                </li>
               </ul>
-            </li>
-            <li class="dropdown">
-              <a href="playback.html" class="dropdown-toggle" data-toggle="dropdown">Playback <b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                <li><a href="playback.html">Playback</a></li>
-                <li class="divider"></li>
-                <li><a href="playback.html#clientapps">Client Player Applications</a>
-                <li><a href="playback.html#browsers">Browsers</a>
-                <li><a href="playback.html#servers">License Servers</a>
-              </ul>
-            </li>
-          </ul>
-          <p class="navbar-text navbar-right">MSE-EME Reference Platform Documentation</p>
-        </nav>
+            </nav>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -417,18 +428,18 @@ usage:  PlayReadyKeygen &lt;key_id&gt; [&lt;key_seed&gt;]
 
           <pre><code>java -jar PlayReadyKeygen.jar 10000000-1000-1000-1000-100000000001
 ===============================================
-Content key ID = 
+Content key ID =
   0x10000000100010001000100000000001
   0x00000010001000101000100000000001 (MS binary)
   EAAAABAAEAAQABAAAAAAAQ== (Base64)
   AAAAEAAQABAQABAAAAAAAQ== (Base64, MS binary)
-Content key = 
+Content key =
   0x3A2A1B68DD2BD9B2EEB25E84C4776668
   OiobaN0r2bLusl6ExHdmaA== (Base64)
-Checksum = 
+Checksum =
   0xE53CC8610DA1ACE6
   5TzIYQ2hrOY= (Base64)
-IV = 
+IV =
   0xCB3CA34344ED1FE2
   yzyjQ0TtH+I= (Base64)
 
@@ -705,7 +716,7 @@ D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</p></pre>
     </div>
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script type="text/javascript" src="lib/bootstrap-custom/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="lib/bootstrap-custom/js/bootstrap.js"></script>
     <script type="text/javascript" src="lib/highlight/highlight.pack.js"></script>
     <script type="text/javascript">hljs.initHighlightingOnLoad();</script>
     <script type='text/javascript'>
