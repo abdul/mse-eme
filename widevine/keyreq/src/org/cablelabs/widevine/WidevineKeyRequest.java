@@ -8,9 +8,8 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,7 +38,7 @@ public class WidevineKeyRequest {
     private static final String[] DRM_TYPES = { "WIDEVINE" };
     
     private static final String CABLELABS_SERVER_URL = "https://license.widevine.com/cenc/getcontentkey/cablelabs";
-    private static final String TEST_SERVER_URL      = "https://license.widevine.com/cenc/getcontentkey/widevine_test";
+    private static final String TEST_SERVER_URL      = "https://license.uat.widevine.com";
     
     private static final byte[] CABLELABS_IV = { (byte)0x99, (byte)0xce, (byte)0xac, (byte)0x24,
                                                  (byte)0x52, (byte)0xb5, (byte)0x7b, (byte)0x96,
@@ -60,11 +59,11 @@ public class WidevineKeyRequest {
         
         int i;
 
-        // Map track type to track ID
-        Map<TrackType, String> tracks = new HashMap<TrackType, String>();
+        // Track list
+        Vector<Track> tracks = new Vector<Track>();
         
         // Parse arguments
-        String content_id_str = args[0];
+        String content_id_str = null;
         for (i = 0; i < args.length; i++) {
             
             // Parse options
@@ -82,6 +81,12 @@ public class WidevineKeyRequest {
                 continue;
             }
             
+            // Get content ID
+            if (content_id_str == null) {
+                content_id_str = args[i];
+                continue;
+            }
+            
             // Parse tracks
             String track_desc[] = args[i].split(":");
             if (track_desc.length != 2) {
@@ -89,8 +94,10 @@ public class WidevineKeyRequest {
                 System.exit(1);;
             }
             try {
-                TrackType type = TrackType.valueOf(track_desc[1]);
-                tracks.put(type, track_desc[0]);
+                Track t = new Track();
+                t.type = TrackType.valueOf(track_desc[1]);
+                t.id = Integer.parseInt(track_desc[0]);
+                tracks.add(t);
             }
             catch (IllegalArgumentException e) {
                 usage();
@@ -110,12 +117,11 @@ public class WidevineKeyRequest {
         requestMessage.drm_types = DRM_TYPES;
         
         // Add the track requests to the message
-        Set<TrackType> types = tracks.keySet();
-        requestMessage.tracks = new RequestMessage.Track[types.size()];
+        requestMessage.tracks = new RequestMessage.Track[tracks.size()];
         i = 0;
-        for (TrackType t : types) {
+        for (Track t : tracks) {
             RequestMessage.Track track = new RequestMessage.Track();
-            track.type = t;
+            track.type = t.type;
             requestMessage.tracks[i++] = track;
         }
         
@@ -150,6 +156,7 @@ public class WidevineKeyRequest {
                 
                 request.signer = "cablelabs";
                 request.signature = Base64.encodeBase64String(encrypted);
+                //request.signature = "NR0BsCLb6InOP8cIopbM+ldwCvHkMrA/kffelYbD7+Q=";
                 
                 serverURL = CABLELABS_SERVER_URL;
             }
@@ -206,13 +213,12 @@ public class WidevineKeyRequest {
         Response response = gson.fromJson(jsonResponseStr, Response.class);
         System.out.println("Response:");
         System.out.println(prettyGson.toJson(response));
-        /*
+        
         String responseMessageStr = new String(Base64.decodeBase64(response.response));
         ResponseMessage responseMessage = gson.fromJson(responseMessageStr, ResponseMessage.class);
         System.out.println("ResponseMessage:");
         System.out.println(prettyGson.toJson(responseMessage));
         ResponseMessage newresp = responseMessage;
-        */
     }
 
 }
