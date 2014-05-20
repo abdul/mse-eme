@@ -29,10 +29,16 @@ public abstract class DRMInfoPSSH implements MP4BoxXML {
         this.systemID = systemID;
     }
     
+    /**
+     * Generates the base DRMInfo element with a system ID child element
+     * 
+     * @param d the DOM Document
+     * @return the element
+     */
     protected Element generateDRMInfo(Document d) {
        Element e = d.createElement(ELEMENT);
        e.setAttribute(ATTR_TYPE, "pssh");
        e.setAttribute(ATTR_VERSION, "0");
-       return e;
+       
     }
 }

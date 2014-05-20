@@ -1,6 +1,7 @@
 
 package org.cablelabs.cryptfile;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.w3c.dom.Document;
@@ -8,7 +9,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * Bitstream XML element used in definition of PSSH boxes in MP4Box cryptfiles
+ * Bitstream XML element used in definition of PSSH boxes in MP4Box cryptfiles.
+ * 
+ * To use, construct a default Bitstream, then use one of the setup* methods to set
+ * data of a particular type
  */
 public class Bitstream implements MP4BoxXML {
     
@@ -26,7 +30,7 @@ public class Bitstream implements MP4BoxXML {
     private String string;
     
     // Data
-    private byte[] data;
+    byte[] data;
     
     private enum BSType {
         VALUE,
@@ -56,7 +60,7 @@ public class Bitstream implements MP4BoxXML {
      * @param value the integer value
      * @param bits the width of the field in bits (0-padded)
      */
-    public Bitstream(int value, int bits) {
+    public void setupInteger(int value, int bits) {
         type = BSType.VALUE;
         this.value = value;
         this.bits = bits;
@@ -70,7 +74,7 @@ public class Bitstream implements MP4BoxXML {
      * @param length the length of data to write starting at the given offset (-1
      * to include all data to the end of the file)
      */
-    public Bitstream(String file, int offset, int length) {
+    public void setupFile(String file, int offset, int length) {
         type = BSType.FILE;
         string = file;
         this.offset = offset;
@@ -82,8 +86,8 @@ public class Bitstream implements MP4BoxXML {
      * 
      * @param string
      */
-    public Bitstream(String string) {
-        this(string, -1);
+    public void setupString(String string) {
+        setupString(string, -1);
     }
     
     /**
@@ -93,7 +97,7 @@ public class Bitstream implements MP4BoxXML {
      * @param string the string
      * @param bits the width of the length field in bits
      */
-    public Bitstream(String string, int bits) {
+    public void setupString(String string, int bits) {
         if (string.length() > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("String length is too long for given bit width");
         type = BSType.STRING;
@@ -106,7 +110,7 @@ public class Bitstream implements MP4BoxXML {
      * 
      * @param fourcc the fourcc 
      */
-    public Bitstream(char[] fourcc) {
+    public void setupFourCC(char[] fourcc) {
         if (fourcc.length != 4)
             throw new IllegalArgumentException("FOURCC data is not 4 characters long!");
         type = BSType.FOURCC;
@@ -118,36 +122,83 @@ public class Bitstream implements MP4BoxXML {
      * 
      * @param id128 the 128-bit value 
      */
-    public Bitstream(byte[] id128) {
+    public void setupID128(byte[] id128) {
         if (id128.length != 16)
             throw new IllegalArgumentException("ID128 data is not 16 bytes in length!");
         type = BSType.ID128;
-        this.data = id128;
+        data = id128;
     }
     
     /**
-     * Arbitrary data to be encoded in either hexadecimal or base64
+     * Arbitrary data.  Will be encoded to hexadecimal string for insertion in the cryptfile
      * 
      * @param data the data
-     * @param base64 true if data should be encoded in base64, false for hexadecimal
      */
-    public Bitstream(byte[] data, boolean base64) {
-        this(data, base64, -1);
+    public void setupData(byte[] data) {
+        setupData(data, -1);
     }
     
     /**
-     * Arbitrary data to be encoded in either hexadecimal or base64 preceded by an integer
-     * value indicating the length of the data
+     * Arbitrary data preceded by an integer value indicating the length of the data.  Data
+     * will be encoded to hexadecimal string for insertion in the cryptfile
      * 
      * @param data the data
-     * @param base64 true if data should be encoded in base64, false for hexadecimal
      * @param the width of the length field in bits
      */
-    public Bitstream(byte[] data, boolean base64, int bits) {
+    public void setupData(byte[] data, int bits) {
         if (data.length > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("Data length is too long for given bit width");
-        type = base64 ? BSType.DATA64 : BSType.DATA;
+        type = BSType.DATA;
         this.data = data;
+        this.bits = bits;
+    }
+    
+    /**
+     * Arbitrary data.  Input string hexadecimal will be used "as is" in the cryptfile.
+     * 
+     * @param data the data in hexadecimal string format
+     * @throws DecoderException 
+     */
+    public void setupDataHex(String hexData) throws DecoderException {
+        setupDataHex(hexData, -1);
+    }
+    
+    /**
+     * Arbitrary data preceded by an integer value indicating the length of the data.  Input
+     * string hexadecimal will be used "as is" in the cryptfile
+     * 
+     * @param data the data in hexadecimal string format
+     * @param the width of the length field in bits
+     * @throws DecoderException 
+     */
+    public void setupDataHex(String dataHex, int bits) throws DecoderException {
+        if ((dataHex.length() / 2) > (Math.pow(2, bits) - 1))
+            throw new IllegalArgumentException("Data length is too long for given bit width");
+        type = BSType.DATA;
+        data = Hex.decodeHex(dataHex.toCharArray());
+        this.bits = bits;
+    }
+    
+    /**
+     * Arbitrary data.  Input string in base64 notation will be used "as is" in the cryptfile
+     * 
+     * @param data the data
+     */
+    public void setupDataB64(String b64Data) {
+        setupDataB64(b64Data, -1);
+    }
+    
+    /**
+     * Arbitrary data preceded by an integer value indicating the length of the data
+     * 
+     * @param data the data in hexadecimal string format
+     * @param the width of the length field in bits
+     */
+    public void setupDataB64(String b64Data, int bits) {
+        if (Base64.decodeBase64(b64Data).length > (Math.pow(2, bits) - 1))
+            throw new IllegalArgumentException("Data length is too long for given bit width");
+        type = BSType.DATA64;
+        data = Base64.decodeBase64(b64Data);
         this.bits = bits;
     }
     
