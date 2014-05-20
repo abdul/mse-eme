@@ -1,5 +1,5 @@
 
-package org.cablelabs.widevine.keyreq;
+package org.cablelabs.widevine;
 
 public class Track {
     public TrackType type;

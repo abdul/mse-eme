@@ -3,8 +3,8 @@ package org.cablelabs.widevine.cryptgen;
 
 import java.util.Vector;
 
-import org.cablelabs.widevine.keyreq.Track;
-import org.cablelabs.widevine.keyreq.TrackType;
+import org.cablelabs.widevine.Track;
+import org.cablelabs.widevine.TrackType;
 
 public class CryptfileGen {
 

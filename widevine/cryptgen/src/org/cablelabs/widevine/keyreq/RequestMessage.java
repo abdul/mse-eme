@@ -3,6 +3,8 @@
 
 package org.cablelabs.widevine.keyreq;
 
+import org.cablelabs.widevine.TrackType;
+
 /**
  * Widevine JSON request object
  */

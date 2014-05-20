@@ -3,6 +3,8 @@
 
 package org.cablelabs.widevine.keyreq;
 
+import org.cablelabs.widevine.TrackType;
+
 public class ResponseMessage {
     
     public enum StatusCode {
