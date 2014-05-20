@@ -1,0 +1,27 @@
+
+option java_package = "org.cablelabs.widevine.proto";
+option java_outer_classname = "CLWidevineCencHeader";
+
+message WidevineCencHeader { 
+
+ enum Algorithm { 
+   UNENCRYPTED = 0; 
+   AESCTR = 1; 
+ }; 
+
+ optional Algorithm algorithm = 1; 
+ repeated bytes key_id = 2; 
+
+ // Content provider name. 
+ optional string provider = 3; 
+
+ // A content identifier, specified by content provider. 
+ optional bytes content_id = 4; 
+
+ // Track type. Acceptable values are SD, HD and AUDIO. Used to differentiate 
+ // content keys used by an asset. 
+ optional string track_type = 5; 
+
+ // The name of a registered policy to be used for this asset. 
+ optional string policy = 6; 
+}

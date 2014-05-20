@@ -8,7 +8,6 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.crypto.Cipher;
@@ -218,7 +217,5 @@ public class WidevineKeyRequest {
         ResponseMessage responseMessage = gson.fromJson(responseMessageStr, ResponseMessage.class);
         System.out.println("ResponseMessage:");
         System.out.println(prettyGson.toJson(responseMessage));
-        ResponseMessage newresp = responseMessage;
     }
-
 }
