@@ -21,7 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.cablelabs.widevine.Track;
 
-public class WidevineKeyRequest {
+public class KeyRequest {
 
     
     private static final String POLICY = "";
