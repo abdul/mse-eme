@@ -5,6 +5,8 @@ import java.util.Vector;
 
 import org.cablelabs.widevine.Track;
 import org.cablelabs.widevine.TrackType;
+import org.cablelabs.widevine.keyreq.KeyRequest;
+import org.cablelabs.widevine.keyreq.ResponseMessage;
 
 public class CryptfileGen {
 
@@ -69,6 +71,9 @@ public class CryptfileGen {
                 System.exit(1);;
             }
         }
+        
+        KeyRequest request = new KeyRequest(content_id_str, tracks, sign_request);
+        ResponseMessage m = request.requestKeys();
+    
     }
-
 }

@@ -4,7 +4,6 @@
 package org.cablelabs.playready;
 
 import java.util.Arrays;
-import java.util.List;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

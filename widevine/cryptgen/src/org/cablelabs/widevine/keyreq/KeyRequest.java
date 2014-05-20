@@ -8,7 +8,7 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.util.Vector;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -44,19 +44,35 @@ public class KeyRequest {
                                                   (byte)0xed, (byte)0x1c, (byte)0x8c, (byte)0x53,
                                                   (byte)0x65, (byte)0xc0, (byte)0x91, (byte)0x02 };
     
-    private static boolean sign_request = false;
+    private String content_id;
+    private List<Track> tracks;
+    private boolean sign_request = false;
     
-    public static void main(String[] args) {
+    public KeyRequest(String content_id, List<Track> tracks, boolean sign_request)
+            throws IllegalArgumentException {
+        
+        // Validate arguments
+        if (content_id == null || content_id.isEmpty())
+            throw new IllegalArgumentException("Must provide a valide content ID: " + content_id);
+        if (tracks == null || tracks.size() == 0)
+            throw new IllegalArgumentException("Must provide a non-empty list of tracks: " +
+                                               ((tracks == null) ? "null" : "empty list"));
+            
+        this.content_id = content_id;
+        this.tracks = tracks;
+        this.sign_request = sign_request;
+    }
+    
+    public ResponseMessage requestKeys() {
         
         int i;
-
         
         Gson gson = new GsonBuilder().disableHtmlEscaping().create();
         Gson prettyGson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
         // Create request object
         RequestMessage requestMessage = new RequestMessage();
-        requestMessage.content_id = Base64.encodeBase64String(content_id_str.getBytes());
+        requestMessage.content_id = Base64.encodeBase64String(content_id.getBytes());
         requestMessage.policy = POLICY;
         requestMessage.client_id = CLIENT_ID;
         requestMessage.drm_types = DRM_TYPES;
@@ -101,7 +117,6 @@ public class KeyRequest {
                 
                 request.signer = "cablelabs";
                 request.signature = Base64.encodeBase64String(encrypted);
-                //request.signature = "NR0BsCLb6InOP8cIopbM+ldwCvHkMrA/kffelYbD7+Q=";
                 
                 serverURL = CABLELABS_SERVER_URL;
             }
@@ -163,5 +178,7 @@ public class KeyRequest {
         ResponseMessage responseMessage = gson.fromJson(responseMessageStr, ResponseMessage.class);
         System.out.println("ResponseMessage:");
         System.out.println(prettyGson.toJson(responseMessage));
+        
+        return responseMessage;
     }
 }
