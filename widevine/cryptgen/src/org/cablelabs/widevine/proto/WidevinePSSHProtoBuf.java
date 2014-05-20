@@ -3,8 +3,8 @@
 
 package org.cablelabs.widevine.proto;
 
-public final class CLWidevineCencHeader {
-  private CLWidevineCencHeader() {}
+public final class WidevinePSSHProtoBuf {
+  private WidevinePSSHProtoBuf() {}
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
@@ -19,7 +19,7 @@ public final class CLWidevineCencHeader {
     /**
      * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
      */
-    org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm getAlgorithm();
+    org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm getAlgorithm();
 
     // repeated bytes key_id = 2;
     /**
@@ -190,7 +190,7 @@ public final class CLWidevineCencHeader {
             }
             case 8: {
               int rawValue = input.readEnum();
-              org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm value = org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm.valueOf(rawValue);
+              org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm value = org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(1, rawValue);
               } else {
@@ -244,14 +244,14 @@ public final class CLWidevineCencHeader {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.cablelabs.widevine.proto.CLWidevineCencHeader.internal_static_WidevineCencHeader_descriptor;
+      return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.internal_static_WidevineCencHeader_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.cablelabs.widevine.proto.CLWidevineCencHeader.internal_static_WidevineCencHeader_fieldAccessorTable
+      return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.internal_static_WidevineCencHeader_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.class, org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Builder.class);
+              org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.class, org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Builder.class);
     }
 
     public static com.google.protobuf.Parser<WidevineCencHeader> PARSER =
@@ -326,7 +326,7 @@ public final class CLWidevineCencHeader {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.getDescriptor().getEnumTypes().get(0);
+        return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final Algorithm[] VALUES = values();
@@ -354,7 +354,7 @@ public final class CLWidevineCencHeader {
     private int bitField0_;
     // optional .WidevineCencHeader.Algorithm algorithm = 1;
     public static final int ALGORITHM_FIELD_NUMBER = 1;
-    private org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm algorithm_;
+    private org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm algorithm_;
     /**
      * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
      */
@@ -364,7 +364,7 @@ public final class CLWidevineCencHeader {
     /**
      * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
      */
-    public org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm getAlgorithm() {
+    public org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm getAlgorithm() {
       return algorithm_;
     }
 
@@ -584,7 +584,7 @@ public final class CLWidevineCencHeader {
     }
 
     private void initFields() {
-      algorithm_ = org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm.UNENCRYPTED;
+      algorithm_ = org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm.UNENCRYPTED;
       keyId_ = java.util.Collections.emptyList();
       provider_ = "";
       contentId_ = com.google.protobuf.ByteString.EMPTY;
@@ -671,53 +671,53 @@ public final class CLWidevineCencHeader {
       return super.writeReplace();
     }
 
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(byte[] data)
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(java.io.InputStream input)
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseDelimitedFrom(java.io.InputStream input)
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseDelimitedFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parseFrom(
+    public static org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -726,7 +726,7 @@ public final class CLWidevineCencHeader {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader prototype) {
+    public static Builder newBuilder(org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -742,20 +742,20 @@ public final class CLWidevineCencHeader {
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeaderOrBuilder {
+       implements org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeaderOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.cablelabs.widevine.proto.CLWidevineCencHeader.internal_static_WidevineCencHeader_descriptor;
+        return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.internal_static_WidevineCencHeader_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.cablelabs.widevine.proto.CLWidevineCencHeader.internal_static_WidevineCencHeader_fieldAccessorTable
+        return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.internal_static_WidevineCencHeader_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.class, org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Builder.class);
+                org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.class, org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Builder.class);
       }
 
-      // Construct using org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.newBuilder()
+      // Construct using org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -775,7 +775,7 @@ public final class CLWidevineCencHeader {
 
       public Builder clear() {
         super.clear();
-        algorithm_ = org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm.UNENCRYPTED;
+        algorithm_ = org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm.UNENCRYPTED;
         bitField0_ = (bitField0_ & ~0x00000001);
         keyId_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -796,23 +796,23 @@ public final class CLWidevineCencHeader {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.cablelabs.widevine.proto.CLWidevineCencHeader.internal_static_WidevineCencHeader_descriptor;
+        return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.internal_static_WidevineCencHeader_descriptor;
       }
 
-      public org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader getDefaultInstanceForType() {
-        return org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.getDefaultInstance();
+      public org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader getDefaultInstanceForType() {
+        return org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.getDefaultInstance();
       }
 
-      public org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader build() {
-        org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader result = buildPartial();
+      public org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader build() {
+        org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader buildPartial() {
-        org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader result = new org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader(this);
+      public org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader buildPartial() {
+        org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader result = new org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -846,16 +846,16 @@ public final class CLWidevineCencHeader {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader) {
-          return mergeFrom((org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader)other);
+        if (other instanceof org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader) {
+          return mergeFrom((org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader other) {
-        if (other == org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader other) {
+        if (other == org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.getDefaultInstance()) return this;
         if (other.hasAlgorithm()) {
           setAlgorithm(other.getAlgorithm());
         }
@@ -899,11 +899,11 @@ public final class CLWidevineCencHeader {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader parsedMessage = null;
+        org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader) e.getUnfinishedMessage();
+          parsedMessage = (org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -915,7 +915,7 @@ public final class CLWidevineCencHeader {
       private int bitField0_;
 
       // optional .WidevineCencHeader.Algorithm algorithm = 1;
-      private org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm algorithm_ = org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm.UNENCRYPTED;
+      private org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm algorithm_ = org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm.UNENCRYPTED;
       /**
        * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
        */
@@ -925,13 +925,13 @@ public final class CLWidevineCencHeader {
       /**
        * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
        */
-      public org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm getAlgorithm() {
+      public org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm getAlgorithm() {
         return algorithm_;
       }
       /**
        * <code>optional .WidevineCencHeader.Algorithm algorithm = 1;</code>
        */
-      public Builder setAlgorithm(org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm value) {
+      public Builder setAlgorithm(org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -945,7 +945,7 @@ public final class CLWidevineCencHeader {
        */
       public Builder clearAlgorithm() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        algorithm_ = org.cablelabs.widevine.proto.CLWidevineCencHeader.WidevineCencHeader.Algorithm.UNENCRYPTED;
+        algorithm_ = org.cablelabs.widevine.proto.WidevinePSSHProtoBuf.WidevineCencHeader.Algorithm.UNENCRYPTED;
         onChanged();
         return this;
       }
@@ -1405,7 +1405,7 @@ public final class CLWidevineCencHeader {
       "r\030\003 \001(\t\022\022\n\ncontent_id\030\004 \001(\014\022\022\n\ntrack_typ" +
       "e\030\005 \001(\t\022\016\n\006policy\030\006 \001(\t\"(\n\tAlgorithm\022\017\n\013" +
       "UNENCRYPTED\020\000\022\n\n\006AESCTR\020\001B4\n\034org.cablela" +
-      "bs.widevine.protoB\024CLWidevineCencHeader"
+      "bs.widevine.protoB\024WidevinePSSHProtoBuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

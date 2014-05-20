@@ -1,6 +1,6 @@
 
 option java_package = "org.cablelabs.widevine.proto";
-option java_outer_classname = "CLWidevineCencHeader";
+option java_outer_classname = "WidevinePSSHProtoBuf";
 
 message WidevineCencHeader { 
 
