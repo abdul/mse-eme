@@ -87,7 +87,8 @@ public class Bitstream implements MP4BoxXML {
      * @param string
      */
     public void setupString(String string) {
-        setupString(string, -1);
+        type = BSType.STRING;
+        this.string = string;
     }
     
     /**
@@ -100,8 +101,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupString(String string, int bits) {
         if (string.length() > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("String length is too long for given bit width");
-        type = BSType.STRING;
-        this.string = string;
+        setupString(string);
         this.bits = bits;
     }
     
@@ -135,7 +135,8 @@ public class Bitstream implements MP4BoxXML {
      * @param data the data
      */
     public void setupData(byte[] data) {
-        setupData(data, -1);
+        type = BSType.DATA;
+        this.data = data;
     }
     
     /**
@@ -148,34 +149,33 @@ public class Bitstream implements MP4BoxXML {
     public void setupData(byte[] data, int bits) {
         if (data.length > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("Data length is too long for given bit width");
-        type = BSType.DATA;
-        this.data = data;
+        setupData(data);
         this.bits = bits;
     }
     
     /**
      * Arbitrary data.  Input string hexadecimal will be used "as is" in the cryptfile.
      * 
-     * @param data the data in hexadecimal string format
+     * @param hexData the data in hexadecimal string format
      * @throws DecoderException 
      */
     public void setupDataHex(String hexData) throws DecoderException {
-        setupDataHex(hexData, -1);
+        type = BSType.DATA;
+        data = Hex.decodeHex(hexData.toCharArray());
     }
     
     /**
      * Arbitrary data preceded by an integer value indicating the length of the data.  Input
      * string hexadecimal will be used "as is" in the cryptfile
      * 
-     * @param data the data in hexadecimal string format
+     * @param hexData the data in hexadecimal string format
      * @param the width of the length field in bits
      * @throws DecoderException 
      */
-    public void setupDataHex(String dataHex, int bits) throws DecoderException {
-        if ((dataHex.length() / 2) > (Math.pow(2, bits) - 1))
+    public void setupDataHex(String hexData, int bits) throws DecoderException {
+        if ((hexData.length() / 2) > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("Data length is too long for given bit width");
-        type = BSType.DATA;
-        data = Hex.decodeHex(dataHex.toCharArray());
+        setupDataHex(hexData);
         this.bits = bits;
     }
     
@@ -185,7 +185,8 @@ public class Bitstream implements MP4BoxXML {
      * @param data the data
      */
     public void setupDataB64(String b64Data) {
-        setupDataB64(b64Data, -1);
+        type = BSType.DATA64;
+        data = Base64.decodeBase64(b64Data);
     }
     
     /**
@@ -197,8 +198,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupDataB64(String b64Data, int bits) {
         if (Base64.decodeBase64(b64Data).length > (Math.pow(2, bits) - 1))
             throw new IllegalArgumentException("Data length is too long for given bit width");
-        type = BSType.DATA64;
-        data = Base64.decodeBase64(b64Data);
+        setupDataB64(b64Data);
         this.bits = bits;
     }
     
@@ -210,7 +210,7 @@ public class Bitstream implements MP4BoxXML {
     public Node generateXML(Document d) {
         
         Element e = d.createElement(ELEMENT);
-        if (bits != -1)
+        if (bits != 0)
             e.setAttribute(ATTR_BITS, Integer.toString(bits));
         
         switch (type) {

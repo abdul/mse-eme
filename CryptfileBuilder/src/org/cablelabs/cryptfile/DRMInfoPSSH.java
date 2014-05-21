@@ -40,5 +40,11 @@ public abstract class DRMInfoPSSH implements MP4BoxXML {
        e.setAttribute(ATTR_TYPE, "pssh");
        e.setAttribute(ATTR_VERSION, "0");
        
+       Bitstream b = new Bitstream();
+       b.setupID128(systemID);
+       
+       e.appendChild(b.generateXML(d));
+       
+       return e;
     }
 }

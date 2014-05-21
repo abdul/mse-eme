@@ -6,5 +6,6 @@ package org.cablelabs.widevine;
 public enum TrackType {
     HD,
     SD,
-    AUDIO
+    AUDIO,
+    NUM_TYPES
 }

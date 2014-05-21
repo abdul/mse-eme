@@ -21,4 +21,6 @@ public class RequestMessage {
     Track tracks[];
     String token;
     String rsa_public_key;
+    Integer first_crypto_period_index;
+    Integer crypto_period_count;
 }

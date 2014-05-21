@@ -17,26 +17,27 @@ public class ResponseMessage {
         MALFORMED_REQUEST,
     }
     
-    static class DRM {
-        String type;
-        String system_id;
+    static public class DRM {
+        public String type;
+        public String system_id;
     }
     
-    static class Track {
-        static class PSSH {
-            String drm_type;
-            String pssh_data;
+    static public class Track {
+        static public class PSSH {
+            public String drm_type;
+            public String data;
         }
         
-        PSSH pssh[];
-        String key_id;
-        TrackType type;
-        String key;
+        public PSSH pssh[];
+        public String key_id;
+        public TrackType type;
+        public String key;
     }
     
-    StatusCode status;
-    String content_id;
-    String session_key;
-    DRM drm[];
-    Track tracks[];
+    public StatusCode status;
+    public String content_id;
+    public String session_key;
+    public DRM drm[];
+    public Track tracks[];
+    public boolean already_used;
 }

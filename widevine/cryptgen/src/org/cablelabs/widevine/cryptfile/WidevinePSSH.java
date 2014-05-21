@@ -1,6 +1,8 @@
 
 package org.cablelabs.widevine.cryptfile;
 
+import org.apache.commons.codec.binary.Base64;
+import org.cablelabs.cryptfile.Bitstream;
 import org.cablelabs.cryptfile.DRMInfoPSSH;
 import org.cablelabs.widevine.proto.WidevinePSSHProtoBuf;
 import org.w3c.dom.Document;
@@ -38,6 +40,9 @@ public class WidevinePSSH extends DRMInfoPSSH {
     @Override
     public Node generateXML(Document d) {
         Element e = generateDRMInfo(d);
+        Bitstream b = new Bitstream();
+        b.setupDataB64(Base64.encodeBase64String(psshProto.toByteArray()));
+        e.appendChild(b.generateXML(d));
+        return e;
     }
-
 }

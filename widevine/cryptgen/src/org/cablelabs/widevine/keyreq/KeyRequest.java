@@ -48,6 +48,17 @@ public class KeyRequest {
     private List<Track> tracks;
     private boolean sign_request = false;
     
+    private int rollingKeyStart = -1;
+    private int rollingKeyCount = -1;
+    
+    /**
+     * Creates a new key request for the given list of tracks.  1 key per track
+     * 
+     * @param content_id the unique content ID
+     * @param tracks the track list
+     * @param sign_request true if the request should be signed, false otherwise
+     * @throws IllegalArgumentException
+     */
     public KeyRequest(String content_id, List<Track> tracks, boolean sign_request)
             throws IllegalArgumentException {
         
@@ -63,6 +74,32 @@ public class KeyRequest {
         this.sign_request = sign_request;
     }
     
+    /**
+     * Creates a new key request for the given list of tracks.  Multiple (rolling) keys per
+     * track
+     * 
+     * @param content_id the unique content ID
+     * @param tracks the track list
+     * @param sign_request true if the request should be signed, false otherwise
+     * @param rollingKeyStart the start time of the first key
+     * @param rollingKeyCount the number of keys
+     * @throws IllegalArgumentException
+     */
+    public KeyRequest(String content_id, List<Track> tracks, boolean sign_request,
+            int rollingKeyStart, int rollingKeyCount) throws IllegalArgumentException {
+        this(content_id, tracks, sign_request);
+        if (rollingKeyCount == 0) 
+            throw new IllegalArgumentException("Must provide a non-zero rolling key count: " + rollingKeyCount);
+            
+        this.rollingKeyStart = rollingKeyStart;
+        this.rollingKeyCount = rollingKeyCount;
+    }
+    
+    /**
+     * Perform the key request.
+     * 
+     * @return the response message
+     */
     public ResponseMessage requestKeys() {
         
         int i;
@@ -84,6 +121,12 @@ public class KeyRequest {
             RequestMessage.Track track = new RequestMessage.Track();
             track.type = t.type;
             requestMessage.tracks[i++] = track;
+        }
+        
+        // Rolling keys
+        if (rollingKeyCount != -1 && rollingKeyStart != -1) {
+            requestMessage.crypto_period_count = rollingKeyCount;
+            requestMessage.first_crypto_period_index = rollingKeyStart;
         }
         
         // Convert request message to JSON and base64 encode

@@ -71,8 +71,10 @@ public class CryptTrack implements MP4BoxXML {
      * Create a non-encrypted track
      * 
      * @param trackID the track ID found in the ISOBMFF track header
+     * @param ivSize the length of the initialization vector (either IV_SIZE_8 or
+     * IV_SIZE_16)
      */
-    public CryptTrack(int trackID) {
+    public CryptTrack(int trackID, int ivSize) {
         this.trackID = trackID;
     }
     
@@ -109,7 +111,7 @@ public class CryptTrack implements MP4BoxXML {
      * IV length generated for you
      * @param key the keys that will encrypt the track
      * @param keyRoll the number of consecutive samples that will be encrypted with a
-     * particular key
+     * particular key.  If key list contains only one key, this parameter is ignored
      */
     public CryptTrack(int trackID, int ivSize, byte[] iv, List<CryptKey> keys, int keyRoll) {
         this(trackID, ivSize, iv);
@@ -120,7 +122,17 @@ public class CryptTrack implements MP4BoxXML {
             throw new IllegalArgumentException("KeyRoll value must be greater than 0 when multiple keys are specified");
         
         this.keys = new ArrayList<CryptKey>(keys);
-        this.keyRoll = keyRoll;
+        if (keys.size() > 1)
+            this.keyRoll = keyRoll;
+    }
+    
+    /**
+     * Add a new encryption key to this track
+     * 
+     * @param key the key
+     */
+    public void addKey(CryptKey key) {
+        keys.add(key);
     }
 
     /* (non-Javadoc)
