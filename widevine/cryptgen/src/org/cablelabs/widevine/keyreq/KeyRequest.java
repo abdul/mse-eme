@@ -5,10 +5,14 @@ package org.cablelabs.widevine.keyreq;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.List;
+import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,6 +21,7 @@ import javax.crypto.spec.IvParameterSpec;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.cablelabs.widevine.Track;
@@ -28,25 +33,22 @@ public class KeyRequest {
     private static final String CLIENT_ID = null;
     private static final String[] DRM_TYPES = { "WIDEVINE" };
     
-    private static final String CABLELABS_SERVER_URL = "https://license.widevine.com/cenc/getcontentkey/cablelabs";
-    private static final String TEST_SERVER_URL      = "https://license.uat.widevine.com";
+    private static final String TEST_PROVIDER   = "widevine_test";
+    private static final String TEST_SERVER_URL = "https://license.uat.widevine.com";
     
-    private static final byte[] CABLELABS_IV = { (byte)0x99, (byte)0xce, (byte)0xac, (byte)0x24,
-                                                 (byte)0x52, (byte)0xb5, (byte)0x7b, (byte)0x96,
-                                                 (byte)0x5f, (byte)0xed, (byte)0x68, (byte)0x1d,
-                                                 (byte)0x8c, (byte)0x49, (byte)0x6b, (byte)0x3e };
-    private static final byte[] CABLELABS_KEY = { (byte)0xc3, (byte)0xb0, (byte)0xe5, (byte)0x0a,
-                                                  (byte)0xde, (byte)0x0e, (byte)0xde, (byte)0x93,
-                                                  (byte)0x6a, (byte)0x53, (byte)0xcb, (byte)0x94,
-                                                  (byte)0x5b, (byte)0x80, (byte)0x0a, (byte)0x05,
-                                                  (byte)0x28, (byte)0x7f, (byte)0xe1, (byte)0x7a,
-                                                  (byte)0x46, (byte)0x36, (byte)0xda, (byte)0x6e,
-                                                  (byte)0xed, (byte)0x1c, (byte)0x8c, (byte)0x53,
-                                                  (byte)0x65, (byte)0xc0, (byte)0x91, (byte)0x02 };
+    private static final String SIGN_PROPS_URL      = "url";
+    private static final String SIGN_PROPS_KEY      = "key";
+    private static final String SIGN_PROPS_IV       = "iv";
+    private static final String SIGN_PROPS_PROVIDER = "provider";
     
     private String content_id;
     private List<Track> tracks;
+    
     private boolean sign_request = false;
+    String license_url;
+    byte[] sign_key;
+    byte[] sign_iv;
+    String provider;
     
     private int rollingKeyStart = -1;
     private int rollingKeyCount = -1;
@@ -59,7 +61,7 @@ public class KeyRequest {
      * @param sign_request true if the request should be signed, false otherwise
      * @throws IllegalArgumentException
      */
-    public KeyRequest(String content_id, List<Track> tracks, boolean sign_request)
+    public KeyRequest(String content_id, List<Track> tracks)
             throws IllegalArgumentException {
         
         // Validate arguments
@@ -71,7 +73,6 @@ public class KeyRequest {
             
         this.content_id = content_id;
         this.tracks = tracks;
-        this.sign_request = sign_request;
     }
     
     /**
@@ -85,14 +86,72 @@ public class KeyRequest {
      * @param rollingKeyCount the number of keys
      * @throws IllegalArgumentException
      */
-    public KeyRequest(String content_id, List<Track> tracks, boolean sign_request,
-            int rollingKeyStart, int rollingKeyCount) throws IllegalArgumentException {
-        this(content_id, tracks, sign_request);
+    public KeyRequest(String content_id, List<Track> tracks, int rollingKeyStart, int rollingKeyCount)
+            throws IllegalArgumentException {
+        this(content_id, tracks);
         if (rollingKeyCount == 0) 
             throw new IllegalArgumentException("Must provide a non-zero rolling key count: " + rollingKeyCount);
             
         this.rollingKeyStart = rollingKeyStart;
         this.rollingKeyCount = rollingKeyCount;
+    }
+    
+    /**
+     * Indicates that this request should be signed and that it should use the credentials
+     * in the given properties file
+     * <p>
+     * The properties file contains the following properties:
+     * <p>
+     * <b>url</b> : The key server URL
+     * <b>key</b> : The 32-byte signing key, hexadecimal notation
+     * <b>url</b> : The 16-byte initialization vector, hexadecimal notation
+     * <b>url</b> : The provider name
+     * 
+     * @param props_file the signing properties file
+     * @throws IOException if there was an error reading from the properties file 
+     * @throws FileNotFoundException if the properties file was not found
+     */
+    public void setSigningProperties(String props_file) throws FileNotFoundException, IOException {
+        Properties props = new Properties();
+        props.load(new FileInputStream(props_file));
+        
+        String prop;
+        
+        // Key server URL
+        if ((prop = props.getProperty(SIGN_PROPS_URL)) == null)
+            throw new IllegalArgumentException("'url' property not found in request signing properties file");
+        license_url = prop;
+        
+        // Signing key
+        if ((prop = props.getProperty(SIGN_PROPS_KEY)) == null)
+            throw new IllegalArgumentException("'key' property not found in request signing properties file");
+        try {
+            sign_key = Hex.decodeHex(prop.toCharArray());
+            if (sign_key.length != 32)
+                throw new IllegalArgumentException("Request signing key is not 32 bytes in length");
+        }
+        catch (DecoderException e) {
+            throw new IllegalArgumentException("Request signing key could not be parsed");
+        }
+        
+        // Signing initialization vector
+        if ((prop = props.getProperty(SIGN_PROPS_IV)) == null)
+            throw new IllegalArgumentException("'iv' property not found in request signing properties file");
+        try {
+            sign_iv = Hex.decodeHex(prop.toCharArray());
+            if (sign_iv.length != 16)
+                throw new IllegalArgumentException("Request initialization vector is not 16 bytes in length");
+        }
+        catch (DecoderException e) {
+            throw new IllegalArgumentException("Request initialization vector could not be parsed");
+        }
+        
+        // Provider name
+        if ((prop = props.getProperty(SIGN_PROPS_PROVIDER)) == null)
+            throw new IllegalArgumentException("'provider' property not found in request signing properties file");
+        provider = prop;
+        
+        sign_request = true;
     }
     
     /**
@@ -149,8 +208,8 @@ public class KeyRequest {
                 System.out.println("SHA-1 hash of JSON request message = 0x" + Hex.encodeHexString(sha1_b));
                 
                 // Use AES/CBC/PKCS5Padding with CableLabs Key and InitVector
-                SecretKeySpec keySpec = new SecretKeySpec(CABLELABS_KEY, "AES");
-                IvParameterSpec ivSpec = new IvParameterSpec(CABLELABS_IV);
+                SecretKeySpec keySpec = new SecretKeySpec(sign_key, "AES");
+                IvParameterSpec ivSpec = new IvParameterSpec(sign_iv);
                 Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
                 
                 // Encrypt the SHA-1 hash of our request message
@@ -158,18 +217,17 @@ public class KeyRequest {
                 byte[] encrypted = cipher.doFinal(sha1_b);
                 System.out.println("AES/CBC/PKCS5Padding Encrypted SHA1-hash = 0x" + Hex.encodeHexString(encrypted));
                 
-                request.signer = "cablelabs";
+                request.signer = provider;
                 request.signature = Base64.encodeBase64String(encrypted);
                 
-                serverURL = CABLELABS_SERVER_URL;
+                serverURL = license_url;
             }
             catch (Exception e) {
                 System.out.println("Error performing message encryption!  Message = " + e.getMessage());
                 System.exit(1);
             }
         } else {
-            request.signer = "widevine_test";
-            
+            request.signer = TEST_PROVIDER;
             serverURL = TEST_SERVER_URL;
         }
         
