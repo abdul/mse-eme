@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<GPACDRM type="CENC AES-CTR">
+  <DRMInfo type="pssh" version="0">
+    <BS ID128="edef8ba979d64acea3c827dcd51d21ed"/>
+    <BS data64="CAESEP/i0wlr1lmXvlP2a8F98DcaCWNhYmxlbGFicyIHYWJjZGVmZyoCSEQyAA=="/>
+  </DRMInfo>
+  <DRMInfo type="pssh" version="0">
+    <BS ID128="edef8ba979d64acea3c827dcd51d21ed"/>
+    <BS data64="CAESEEtkCKdLslbjnnK7r20hO+4aCWNhYmxlbGFicyIHYWJjZGVmZyoFQVVESU8yAA=="/>
+  </DRMInfo>
+  <CrypTrack IV_size="8" first_IV="0x81be199aa9e1ac47" isEncrypted="1" saiSavedBox="senc" trackID="1">
+    <key KID="0xffe2d3096bd65997be53f66bc17df037" value="0xb75f370a69054347d0cac3cdd8bcffb4"/>
+  </CrypTrack>
+  <CrypTrack IV_size="8" first_IV="0xb191780d43c1fcbb" isEncrypted="1" saiSavedBox="senc" trackID="2">
+    <key KID="0x4b6408a74bb256e39e72bbaf6d213bee" value="0xf71b35c29c1d6ad21cc40c704a32981b"/>
+  </CrypTrack>
+</GPACDRM>

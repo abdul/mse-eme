@@ -231,9 +231,12 @@ public class CryptfileGen {
                                                           cryptTracks, psshList);
         
         // Write the output
+        cfBuilder.writeCryptfile(System.out);
         try {
-            OutputStream os = (outfile == null) ? System.out : new FileOutputStream(outfile);
-            cfBuilder.writeCryptfile(os);;
+            if (outfile != null) {
+                System.out.println("Writing cryptfile to: " + outfile);
+                cfBuilder.writeCryptfile(new FileOutputStream(outfile));
+            }
         }
         catch (FileNotFoundException e) {
             System.err.println("Could not open output file (" + outfile + ") for writing");

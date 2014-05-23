@@ -6,4 +6,5 @@ package org.cablelabs.widevine.keyreq;
 public class Response {
 
     String response;
+    String signature;
 }
