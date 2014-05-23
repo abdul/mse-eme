@@ -12,6 +12,10 @@ var addCORSHeaders = function(res, length) {
         "Access-Control-Allow-Headers": 'Content-Type, Authorization, Content-Length, X-Requested-Width'});
 };
 
+var sendLicenseRequest = function(data) {
+
+};
+
 http.createServer(function(req, res) {
 
     var payload = "";
@@ -19,13 +23,12 @@ http.createServer(function(req, res) {
         payload += data;
     });
     req.on('end', function() {
+        var licenseResponse = sendLicenseRequest(payload);
 
+        addCORSHeaders(res, json_str_response.length);
+        res.write(json_str_response);
+        res.end();
     });
-
-    var json_str_response = JSON.stringify(response);
-    addCORSHeaders(res, json_str_response.length);
-    res.write(json_str_response);
-    res.end();
 
 }).listen(8025);
 
