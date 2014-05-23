@@ -37,6 +37,12 @@ var wvServer = {};
 wvServer.url = "https://license.uat.widevine.com";
 wvServer.provider = "widevine_test";
 
+// Other required modules
+var https = require('https');
+var http = require('http');
+var crypto = require('crypto');
+var url = require('url');
+
 // Look for server definition module on the command line
 var args = process.argv.slice(2);
 if (args.length > 0) {
@@ -44,7 +50,18 @@ if (args.length > 0) {
     signed = true;
 }
 
-var http = require('http');
+// Validate server URL
+var urlParsed = url.parse(wvServer.url);
+var client;
+if (urlParsed.protocol === "https")
+    client = https;
+else if (urlParsed.protocol === "http")
+    client = http;
+else {
+    console.log("Illegal server URL: " + wvServer.url);
+    process.exit(1);
+}
+urlParsed.method = 'POST';
 
 var addCORSHeaders = function(res, length) {
     res.writeHeader(200, {
@@ -57,7 +74,54 @@ var addCORSHeaders = function(res, length) {
 
 var sendLicenseRequest = function(data) {
 
+    var requestMessage = {};
+    requestMessage.payload = (new Buffer(data)).toString('base64');
+    requestMessage.provider = wvServer.provider;
+    requestMessage.allowed_track_types = "SD_HD";
+    var requestMessageJSON = JSON.stringify(requestMessage);
+
+    var request = {};
+    request.request = (new Buffer(requestMessageJSON, "utf8")).toString("base64");
+
+    if (signed) {
+
+        var sha1Hash = crypto.createHash("sha1");
+        sha1Hash.update(requestMessageJSON, "utf8");
+        var sha1 = sha1Hash.digest();
+
+        var aesCipher = crypto.createCipheriv("aes-256-cbc",
+                (new Buffer(wvServer.key, "base64")), (new Buffer(wvServer.iv, "base64")));
+        aesCipher.update(sha1);
+
+        request.signature = aesCipher.final("base64");
+        request.signer = wvServer.provider;
+    }
+
+    var client;
+
 };
+
+var cipherFound = false, hashFound = false;
+
+// Test for required hash and cipher
+crypto.getCiphers().forEach(function (val) {
+    if (val === "aes-256-cbc") {
+        cipherFound = true;
+    }
+});
+if (!cipherFound) {
+    console.log("Could not find support for 'aes-256-cbc' cipher!");
+    process.exit(1);
+}
+crypto.getHashes().forEach(function (val) {
+    if (val === "sha1") {
+        hashFound = true;
+    }
+});
+if (!hashFound) {
+    console.log("Could not find support for 'sha1' hash!");
+    process.exit(1);
+}
 
 http.createServer(function(req, res) {
 
