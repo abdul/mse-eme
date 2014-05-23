@@ -51,8 +51,8 @@ public class CryptfileGen {
         System.out.println("\t\tIf present, key requests will be signed with the given key information.  <sign_props_file> is");
         System.out.println("\t\ta Java properties file with the following properties:");
         System.out.println("\t\t\turl:      Your assigned key server URL");
-        System.out.println("\t\t\tkey:      Your assigned 32-byte signing key, hexadecimal notation");
-        System.out.println("\t\t\tiv:       Your assigned 16-byte initialization vector, hexadecimal notation");
+        System.out.println("\t\t\tkey:      Your assigned 32-byte signing key, base64 notation");
+        System.out.println("\t\t\tiv:       Your assigned 16-byte initialization vector, base64 notation");
         System.out.println("\t\t\tprovider: Your assigned provider name");
         System.out.println("\t\tIf this argument is not present, the requests will be unsigned and the");
         System.out.println("\t\t\"widevine_test\" provider and URL will be used");
@@ -102,7 +102,7 @@ public class CryptfileGen {
         Track[] track_args = new Track[TrackType.NUM_TYPES.ordinal()];
         
         // Should the request be signed
-        String signingFile= null;
+        String signingFile = null;
         
         // Rolling keys
         int rollingKeyStart = -1;

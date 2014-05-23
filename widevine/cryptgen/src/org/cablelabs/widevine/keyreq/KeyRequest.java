@@ -125,26 +125,16 @@ public class KeyRequest {
         // Signing key
         if ((prop = props.getProperty(SIGN_PROPS_KEY)) == null)
             throw new IllegalArgumentException("'key' property not found in request signing properties file");
-        try {
-            sign_key = Hex.decodeHex(prop.toCharArray());
-            if (sign_key.length != 32)
-                throw new IllegalArgumentException("Request signing key is not 32 bytes in length");
-        }
-        catch (DecoderException e) {
-            throw new IllegalArgumentException("Request signing key could not be parsed");
-        }
+        sign_key = Base64.decodeBase64(prop);
+        if (sign_key.length != 32)
+            throw new IllegalArgumentException("Request signing key is not 32 bytes in length");
         
         // Signing initialization vector
         if ((prop = props.getProperty(SIGN_PROPS_IV)) == null)
             throw new IllegalArgumentException("'iv' property not found in request signing properties file");
-        try {
-            sign_iv = Hex.decodeHex(prop.toCharArray());
-            if (sign_iv.length != 16)
-                throw new IllegalArgumentException("Request initialization vector is not 16 bytes in length");
-        }
-        catch (DecoderException e) {
-            throw new IllegalArgumentException("Request initialization vector could not be parsed");
-        }
+        sign_iv = Base64.decodeBase64(prop);
+        if (sign_iv.length != 16)
+            throw new IllegalArgumentException("Request initialization vector is not 16 bytes in length");
         
         // Provider name
         if ((prop = props.getProperty(SIGN_PROPS_PROVIDER)) == null)
