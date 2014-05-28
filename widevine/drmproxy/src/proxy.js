@@ -31,7 +31,7 @@
  * module.exports = wvServer;
  */
 
-// Default server values (not signed,
+// Default server values (not signed, widevine test account)
 var signed = false;
 var wvServer = {};
 wvServer.url = "https://license.uat.widevine.com";
@@ -42,6 +42,7 @@ var https = require('https');
 var http = require('http');
 var crypto = require('crypto');
 var url = require('url');
+var Q = require('q');
 
 // Look for server definition module on the command line
 var args = process.argv.slice(2);
@@ -53,15 +54,18 @@ if (args.length > 0) {
 // Validate server URL
 var urlParsed = url.parse(wvServer.url);
 var client;
-if (urlParsed.protocol === "https")
+if (urlParsed.protocol === "https:")
     client = https;
-else if (urlParsed.protocol === "http")
+else if (urlParsed.protocol === "http:")
     client = http;
 else {
     console.log("Illegal server URL: " + wvServer.url);
     process.exit(1);
 }
 urlParsed.method = 'POST';
+
+console.log("Starting proxy server.  DRM Server Info:");
+console.log(wvServer);
 
 var addCORSHeaders = function(res, length) {
     res.writeHeader(200, {
@@ -78,6 +82,10 @@ var sendLicenseRequest = function(data) {
     requestMessage.payload = (new Buffer(data)).toString('base64');
     requestMessage.provider = wvServer.provider;
     requestMessage.allowed_track_types = "SD_HD";
+
+    console.log("License request message:");
+    console.log(JSON.stringify(requestMessage, undefined, 2));
+
     var requestMessageJSON = JSON.stringify(requestMessage);
 
     var request = {};
@@ -85,20 +93,47 @@ var sendLicenseRequest = function(data) {
 
     if (signed) {
 
+        console.log("Signing request (signer = " + wvServer.provider + ")...");
+
         var sha1Hash = crypto.createHash("sha1");
         sha1Hash.update(requestMessageJSON, "utf8");
         var sha1 = sha1Hash.digest();
 
         var aesCipher = crypto.createCipheriv("aes-256-cbc",
                 (new Buffer(wvServer.key, "base64")), (new Buffer(wvServer.iv, "base64")));
-        aesCipher.update(sha1);
 
-        request.signature = aesCipher.final("base64");
+        request.signature = Buffer.concat( [
+            aesCipher.update(sha1, "binary"),
+            aesCipher.final()
+        ]).toString("base64");
         request.signer = wvServer.provider;
     }
 
-    var client;
+    console.log("Sending request to license server:");
+    console.log(JSON.stringify(request, undefined, 2));
 
+    var deferred = Q.defer();
+    var httpReq = client.request(urlParsed, function(res) {
+
+        if (res.statusCode !== 200) {
+            deferred.reject("Received error status code from license server: " + res.statusCode);
+        }
+        else {
+            var resp = "";
+            res.on('data', function (data) {
+                resp += data;
+            });
+            res.on('end', function() {
+                deferred.resolve(resp);
+            });
+        }
+    });
+    httpReq.on('error', function(e) {
+        deferred.reject("Error sending request to license server: " + e.message);
+    });
+    httpReq.write(JSON.stringify(request));
+    httpReq.end();
+    return deferred.promise;
 };
 
 var cipherFound = false, hashFound = false;
@@ -125,16 +160,46 @@ if (!hashFound) {
 
 http.createServer(function(req, res) {
 
+    var sendResponse = function(resp) {
+        var respJSON = JSON.stringify(resp);
+        addCORSHeaders(res, respJSON.length);
+        res.write(respJSON);
+        res.end();
+    };
+
     var payload = "";
     req.on('data', function(data) {
         payload += data;
     });
     req.on('end', function() {
-        var licenseResponse = sendLicenseRequest(payload);
 
-        addCORSHeaders(res, json_str_response.length);
-        res.write(json_str_response);
-        res.end();
+        console.log("Request received! Data length = " + payload.length);
+
+        var proxyResp = {};
+        sendLicenseRequest(payload).then(
+                function (response_data) {
+                    var respJSON = JSON.parse(response_data);
+
+
+                    if (respJSON.status === "OK") {
+                        proxyResp.status = "OK";
+                        proxyResp.message = "";
+                        proxyResp.license = respJSON.license;
+                    }
+                    else {
+                        proxyResp.status = "ERROR";
+                        proxyResp.message = respJSON.status;
+                    }
+                    sendResponse(proxyResp);
+                },
+                function (error) {
+                    var message = "Error in request to license server: " + error;
+                    console.log(message);
+                    proxyResp.status = "ERROR";
+                    proxyResp.message = message;
+                    sendResponse(proxyResp);
+                }
+        );
     });
 
 }).listen(8025);

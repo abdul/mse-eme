@@ -45,10 +45,10 @@ public class KeyRequest {
     private List<Track> tracks;
     
     private boolean sign_request = false;
-    String license_url;
-    byte[] sign_key;
-    byte[] sign_iv;
-    String provider;
+    private String license_url;
+    private byte[] sign_key;
+    private byte[] sign_iv;
+    private String provider;
     
     private int rollingKeyStart = -1;
     private int rollingKeyCount = -1;
@@ -187,6 +187,10 @@ public class KeyRequest {
         // Create request JSON
         Request request = new Request();
         request.request = jsonRequestMessageB64;
+        
+        String test = "{\"payload\":\"CAES77+9Cwrvv70KCAES77+9CQrvv70CCAISE0Nocm9tZUNETS1MaW51eC14ODYY0Kjvv73vv70FIu+/vQIw77+9AQoC77+9AQEA77+977+977+9Ahbvv70CZUrvv70e77+977+977+9Iu+/vSMyLRB0cHUBYG0SOu+/ve+/vXIq77+9dnk5e++/ve+/ve+/vVxp77+9e3FL77+9TFx877+9De+/vQl0PRZlR++/ve+/ve+/vRkH77+9QhYkVu+/ve+/vcuX77+9TO+/vWxW77+977+977+977+977+977+9cgvvv73vv73vv70w77+9Pe+/vQM5YO+/ve+/vSBBLO+/vRvvv70PNHE7ee+/vSvvv70yG++/ve+/vShc77+9b3d7Ni1L77+9Be+/vTzvv71sE1Yy77+977+9D++/vX1jZG/Oie+/ve+/ve+/ve+/ve+/ve+/vTJ3Fe+/ve+/vX5A77+977+977+977+9b++/ve+/ve+/vQfvv70n77+977+9OO+/ve+/ve+/vSANG3/vv73vv70e77+977+977+977+9FTXvv73vv73LlCLvv73vv70e77+9ZQhNEV9PJ++/vV1N77+9Su+/ve+/ve+/ve+/ve+/vcOlAe+/ve+/ve+/vRPVpO+/vQom77+9Y++/ve+/ve+/ve+/vU0seO+/ve+/ve+/vS4M77+9KTEL77+977+977+9eO+/vVnvv73vv73vv73vv71jQe+/vQIDAQABKO+/vSAS77+9Au+/vQMqcO+/vcOmCu+/ve+/ve+/ve+/vXDvv70R77+977+9U3Lvv71r77+9I++/vXUd77+9IO+/vV5q77+9Ou+/ve+/vSxjOXUW77+9Gnzvv70Y77+9YO+/vS9vE++/vRJpZAHvv71P77+977+977+977+9EO+/vRE177+9bu+/vWh277+977+977+9Ee+/vVYp77+9eO+/vWJZYyDvv71eNhVG77+9De+/vTBzA++/ve+/ve+/ve+/ve+/vU7vv70u77+977+9Q++/ve+/vS3ZqF7vv70+77+977+977+977+977+967mO77+9Du+/vS5W77+9Ge+/ve+/ve+/ve+/ve+/ve+/vUXvv73vv71w1KJe77+9XO+/vUFOyL1877+9HjHvv73vv73vv73vv73vv71V77+9KUkPA++/vVfvv714J++/vTxw7Kaf77+977+977+9Kj7vv70E77+9CStrHe+/vUQsQu+/ve+/ve+/vUnvv73vv70x77+9L++/vUHvv73vv71BOwN177+9LHkDBjRh77+977+9N++/vQXvv73Xje+/vSs/77+9X++/ve+/vQAPa++/ve+/vWB077+9TO+/vVZCA0Tvv71077+9eyR1Q++/vUXvv70oGu+/vQUK77+9AggBEhDvv71477+9JO+/vULvv73vv70sRGTvv70Z77+977+9Ghjvv73vv73vv73vv70FIu+/vQIw77+9AQoC77+9AQEA77+9Ne+/vXIadu+/vTAkcE9meOOjte+/vVLvv73Dge+/vRdfJO+/vXs6Y++/vVbvv70P77+9fgjvv73vv73vv73vv70277+977+977+977+9Mu+/ve+/vRRv77+977+9Te+/ve+/ve+/vRYzaV/klYYLFg1Q77+977+9Cu+/ve+/vU/vv70o77+9QEQYZGfvv71t77+977+9Okrvv73vv71D77+977+977+9WkHvv70X77+9SAVqZDDvv71I77+9bArvv70YdO+/ve+/vXHvv73vv73vv71T77+9G++/vXQ477+977+9VGZ877+977+9BhVD77+977+9Fe+/ve+/ve+/vTYsJ++/ve+/vT9B77+9fu+/vQDvv73vv70RYkPvv71J77+9Hu+/ve+/ve+/vUjIj3bvv71Y77+9ARfvv70h77+9agZFAe+/ve+/vW/vv71M77+977+9WwMJZDDvv70CA8iwPSHvv71k77+9Te+/vXsQ77+9fyrvv703bUHvv70u77+9LO+/vRcJL++/ve+/vUpt77+9Re+/vSzvv71DB++/vW7vv73vv71W77+9PlXvv73vv73vv70177+977+9C++/vXvvv73vv708bO+/vQdSMe+/vQIDAQABKO+/vSAS77+9A++/ve+/ve+/ve+/ve+/ve+/vVXvv71g77+977+9Du+/ve+/vWkJE++/ve+/ve+/vQTvv70qxqbvv70EAO+/vXrvv71pFO+/vVBOFu+/ve+/vQld77+9Vxbvv70t77+977+977+9Eu+/ve+/ve+/vUzvv73vv73vv73vv71+Me+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/vTlb77+9MXPvv73vv70/OhXvv73vv73vv71Qa++/ve+/vXzvv73vv70L77+9N37vv73vv71l77+977+9VWvvv73vv71a77+9F++/vcyp77+9Fe+/ve+/vTDvv71TYe+/ve+/ve+/ve+/ve+/ve+/vRfvv71x77+977+9Re+/vVjvv71Bazrvv73Vp++/vXM077+9BxTvv70BDWxh77+977+9J9qP77+92oLvv73vv71cAAHvv73vv73vv71qYu+/vT43AO+/vQsE77+9Gu+/ve+/vXXvv73vv73vv73vv71NYQHvv71xG++/vQLvv71sDRTvv73vv73vv70TVe+/vQzvv71YYkvvv70pXhIh77+9DO+/vd6b77+9RlTvv73vv73vv71p77+9SzJ6ZO+/vX5v77+9bn9Vxpfvv73vv73vv71z77+9CO+/ve+/vQw4BO+/vS1LC++/vUbUme+/vXRZ77+9LAN877+9fj7vv73vv71kEBrvv73vv71s77+9z7bvv70h77+9Ju+/vUzvv73vv73vv70H77+90rzvv71+I2Tvv71pUdyK77+977+9et6Ufe+/vS7vv73vv70m77+977+9Me+/vTHvv73vv73vv73vv73vv73vv71U77+9Lu+/vTPvv73QuO+/vVFb77+9NO+/vQdqX3nvv70eNhkK77+9U++/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/vTXvv70177+9e++/vW84NxlA77+9Lu+/vVTvv73vv71AQCTvv73vv70M77+9Ewzvv71HPjkaGwoRYXJjaGl0ZWN0dXJlX25hbWUSBng4Ni02NBoWCgxjb21wYW55X25hbWUSBkdvb2dsZRoXCgptb2RlbF9uYW1lEglDaHJvbWVDRE0aFgoNcGxhdGZvcm1fbmFtZRIFTGludXgyCAgBEAEYASAAEkYKRAouCAESEO+/ve+/ve+/vQlr77+9We+/ve+/vVPvv71r77+9fe+/vTcaCWNhYmxlbGFicyIHYWJjZGVmZyoCSEQyABABGhDvv70J77+9dXDvv73vv73vv71K1aTvv73vv71tClgYASDvv73fk++/vQUwFRrvv70C77+977+9b++/ve+/ve+/ve+/ve+/ve+/ve+/vU4H77+977+977+977+9Uu+/ve+/vU3vv73vv711W++/vQ/vv71UEO+/ve+/ve+/vUcw77+977+977+9GO+/vdWk77+977+977+9Q2Xvv73vv73vv70CXnl177+977+9ZjfTre+/ve+/vXbvv71X77+9JHfquKjvv70aFgbvv73vv70F77+9KhpUQe+/ve+/vVpWDnVtNe+/ve+/ve+/ve+/vRpD77+9IS3vv71m77+977+977+9Le+/vT8H77+9y5Pvv73vv71+77+977+977+9LCHvv73vv70R77+977+977+9SlocfO+/vSFjYu+/ve+/vWrvv71XTG/vv70ha++/ve+/vS8/PF7vv704Ee+/ve+/vc2BKhTvv73vv709SO+/vRoF77+977+977+977+9Ve+/vceT3Jbvv70USF9YE++/vWXvv71KY1Lvv73vv70teO+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/vU3vv71677+977+977+977+9ei/vv70dMFwW3aBa77+9bu+/vThm77+9Ze+/vVRxdu+/ve+/ve+/vTxATO+/vR/vv71jVR4t77+9Je+/vVfYru+/vR1A77+9JxDvv73vv70J77+9\",\"provider\":\"cablelabs\",\"allowed_track_types\":\"SD_HD\"}";
+        jsonRequestMessage = test; 
+        jsonRequestMessageB64 = Base64.encodeBase64String(jsonRequestMessage.getBytes());
         
         String serverURL = null;
         if (sign_request) {
