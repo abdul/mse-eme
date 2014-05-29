@@ -1,8 +1,6 @@
 
 package org.cablelabs.playready;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,8 +12,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
+import org.cablelabs.cryptfile.KeyPair;
 
 /**
  * PlayReady Common Encryption Key Object.
@@ -23,15 +20,22 @@ import org.apache.commons.codec.binary.Hex;
  * Consists of a 16-byte keyID, a 16-byte key value, and an 8-byte checksum
  * corresponding to the AESCTR algorithm ID
  */
-public class PlayReadyKey {
+public class PlayReadyKeyPair extends KeyPair {
     
-    private byte[] key;
-    private byte[] keyID;
     private byte[] mskeyID;
     private byte[] checksum;
     
-    private static final int AES_128_KEYSIZE = 16;
-    private static final int GUID_SIZE = 16;
+    // Default key seed is the one used by the Microsoft test server
+    private byte[] keySeed = {
+            (byte)0x5D, (byte)0x50, (byte)0x68, (byte)0xBE,
+            (byte)0xC9, (byte)0xB3, (byte)0x84, (byte)0xFF,
+            (byte)0x60, (byte)0x44, (byte)0x86, (byte)0x71,
+            (byte)0x59, (byte)0xF1, (byte)0x6D, (byte)0x6B,
+            (byte)0x75, (byte)0x55, (byte)0x44, (byte)0xFC,
+            (byte)0xD5, (byte)0x11, (byte)0x69, (byte)0x89,
+            (byte)0xB1, (byte)0xAC, (byte)0xC4, (byte)0x27,
+            (byte)0x8E, (byte)0x88 
+    };
     
     /**
      * Converts a GUID into the Microsoft-specific binary encoded form as described
@@ -60,46 +64,9 @@ public class PlayReadyKey {
         return retVal;
     }
     
-    // Default key seed is the one used by the Microsoft test server
-    private byte[] keySeed = {
-            (byte)0x5D, (byte)0x50, (byte)0x68, (byte)0xBE,
-            (byte)0xC9, (byte)0xB3, (byte)0x84, (byte)0xFF,
-            (byte)0x60, (byte)0x44, (byte)0x86, (byte)0x71,
-            (byte)0x59, (byte)0xF1, (byte)0x6D, (byte)0x6B,
-            (byte)0x75, (byte)0x55, (byte)0x44, (byte)0xFC,
-            (byte)0xD5, (byte)0x11, (byte)0x69, (byte)0x89,
-            (byte)0xB1, (byte)0xAC, (byte)0xC4, (byte)0x27,
-            (byte)0x8E, (byte)0x88 
-    };
-    
-    // Converts a string GUID into a byte array
-    private byte[] parseGUID(String guid) {
-        String[] parts = guid.split("-");
-        if (parts.length != 5 || parts[0].length() != 8 || parts[1].length() != 4 ||
-                parts[2].length() != 4 || parts[3].length() != 4 || parts[4].length() != 12)
-            throw new IllegalArgumentException("Invalid GUID: " + guid);
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(GUID_SIZE);
-        byte[] val;
-        
-        try {
-            for (int i = 0; i < 5; i++) {
-                val = Hex.decodeHex(parts[i].toCharArray());
-                baos.write(val);
-            }
-        }
-        catch (DecoderException e) {
-            throw new IllegalArgumentException("Invalid GUID: " + guid);
-        }
-        catch (IOException e) {
-            throw new IllegalArgumentException("Problem writing to ByteArrayOutputStream");
-        }
-        
-        return baos.toByteArray();
-    }
-    
-    private void generateKeyAndChecksum() {
-        key = new byte[AES_128_KEYSIZE];
+    // Generate the key from the key ID according to the Microsoft-documented algorithm
+    private static byte[] generateKey(byte[] keyID, byte[] keySeed) {
+        byte[] key = new byte[AES_128_KEYSIZE];
         
         try {
             
@@ -108,7 +75,7 @@ public class PlayReadyKey {
             //     - Key ID
             MessageDigest sha256_a = MessageDigest.getInstance("SHA-256");
             sha256_a.update(keySeed);
-            sha256_a.update(mskeyID);
+            sha256_a.update(keyID);
             byte[] sha_a = sha256_a.digest();
             
             // Second hash is
@@ -117,7 +84,7 @@ public class PlayReadyKey {
             //     - Key Seed
             MessageDigest sha256_b = MessageDigest.getInstance("SHA-256");
             sha256_b.update(keySeed);
-            sha256_b.update(mskeyID);
+            sha256_b.update(keyID);
             sha256_b.update(keySeed);
             byte[] sha_b = sha256_b.digest();
             
@@ -128,9 +95,9 @@ public class PlayReadyKey {
             //     - Key ID
             MessageDigest sha256_c = MessageDigest.getInstance("SHA-256");
             sha256_c.update(keySeed);
-            sha256_c.update(mskeyID);
+            sha256_c.update(keyID);
             sha256_c.update(keySeed);
-            sha256_c.update(mskeyID);
+            sha256_c.update(keyID);
             byte[] sha_c = sha256_c.digest();
             
             for (int i = 0; i < AES_128_KEYSIZE; i++) {
@@ -144,6 +111,12 @@ public class PlayReadyKey {
             System.out.println("Java Virtual Machine does not support SHA-256 algorithm!");
         }
         
+        return key;
+    }
+    
+    // Generate the key/keyID checksum according to the Microsoft documentation
+    private static byte[] generateChecksum(byte[] mskeyID, byte[] key) {
+        byte[] checksum = null;
         // Generate checksum
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
@@ -166,11 +139,7 @@ public class PlayReadyKey {
         catch (BadPaddingException e) {
             System.out.println("Bad padding exception during checksum generation!");
         }
-    }
-    
-    private void setupKeyID(String keyID) {
-        this.keyID = parseGUID(keyID);
-        this.mskeyID = binaryEncodeMSGUID(this.keyID);
+        return checksum;
     }
     
     /**
@@ -181,10 +150,10 @@ public class PlayReadyKey {
      * @param checksum the 8-byte checksum
      * @param keySeed the key seed used to generate the key (can be null)
      */
-    public PlayReadyKey(String keyID, byte[] key, byte[] checksum, byte[] keySeed) {
-        setupKeyID(keyID);
-        this.key = key;
-        this.checksum = checksum;
+    public PlayReadyKeyPair(String keyID, byte[] key, byte[] checksum, byte[] keySeed) {
+        super(keyID, key);
+        this.mskeyID = binaryEncodeMSGUID(this.keyID);
+        this.checksum = generateChecksum(mskeyID, key);
         this.keySeed = keySeed;
     }
 
@@ -196,10 +165,13 @@ public class PlayReadyKey {
      * @param keyID the key ID GUID in xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx format
      * @param keySeed
      */
-    public PlayReadyKey(String keyID, byte[] keySeed) {
-        setupKeyID(keyID);
+    public PlayReadyKeyPair(String keyID, byte[] keySeed) {
+        super();
+        this.keyID = parseGUID(keyID);
+        this.mskeyID = binaryEncodeMSGUID(this.keyID);
+        this.key = generateKey(this.mskeyID, keySeed);
+        this.checksum = generateChecksum(mskeyID, key);
         this.keySeed = keySeed;
-        generateKeyAndChecksum();
     }
     
     /**
@@ -211,27 +183,12 @@ public class PlayReadyKey {
      * 
      * @param keyID the key ID GUID in xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx format
      */
-    public PlayReadyKey(String keyID) {
-        setupKeyID(keyID);
-        generateKeyAndChecksum();
-    }
-
-    /**
-     * Returns the AES-128 symmetric key
-     * 
-     * @return the key
-     */
-    public byte[] getKey() {
-        return key;
-    }
-
-    /**
-     * Returns the 16-byte, Key ID
-     * 
-     * @return the key ID
-     */
-    public byte[] getKeyID() {
-        return keyID;
+    public PlayReadyKeyPair(String keyID) {
+        super();
+        this.keyID = parseGUID(keyID);
+        this.mskeyID = binaryEncodeMSGUID(this.keyID);
+        this.key = generateKey(this.mskeyID, keySeed);
+        this.checksum = generateChecksum(mskeyID, key);
     }
 
     /**

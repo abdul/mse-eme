@@ -13,7 +13,7 @@ import org.cablelabs.cryptfile.CryptKey;
 import org.cablelabs.cryptfile.CryptTrack;
 import org.cablelabs.cryptfile.CryptfileBuilder;
 import org.cablelabs.cryptfile.DRMInfoPSSH;
-import org.cablelabs.playready.PlayReadyKey;
+import org.cablelabs.playready.PlayReadyKeyPair;
 import org.cablelabs.playready.WRMHeader;
 import org.cablelabs.playready.cryptfile.PlayReadyPSSH;
 
@@ -194,10 +194,10 @@ public class CryptfileGen {
         for (Track t : tracks) {
             List<CryptKey> cryptKeys = new ArrayList<CryptKey>();
             for (String keyID : t.keyIDs) {
-                PlayReadyKey prKey = new PlayReadyKey(keyID);
+                PlayReadyKeyPair prKey = new PlayReadyKeyPair(keyID);
                 wrmHeaders.add(new WRMHeader(headerVersion, prKey, url));
                 
-                cryptKeys.add(new CryptKey(prKey.getKeyID(), prKey.getKey()));
+                cryptKeys.add(new CryptKey(prKey));
             }
             cryptTracks.add(new CryptTrack(t.id, 8, null, cryptKeys, rollingKeySamples));
         }

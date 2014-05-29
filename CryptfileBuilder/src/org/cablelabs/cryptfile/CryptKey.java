@@ -11,8 +11,7 @@ import org.w3c.dom.Node;
  */
 public class CryptKey implements MP4BoxXML {
     
-    private byte[] keyID;
-    private byte[] key;
+    private KeyPair keypair;
     
     private static final String ELEMENT = "key";
     private static final String ATTR_KEYID = "KID";
@@ -21,38 +20,25 @@ public class CryptKey implements MP4BoxXML {
     /**
      * Create a new encryption key specification
      * 
-     * @param keyID
-     * @param key
+     * @param key the keyID/key pair
      */
-    public CryptKey(byte[] keyID, byte[] key) {
+    public CryptKey(KeyPair keypair) {
         
-        if (keyID == null || keyID.length != 16)
-            throw new IllegalArgumentException("Invalid KeyID: " + keyID);
-        if (key == null || key.length != 16)
-            throw new IllegalArgumentException("Invalid Key: " + key);
+        if (keypair == null)
+            throw new IllegalArgumentException("Invalid Key: " + keypair);
         
-        this.keyID = keyID;
-        this.key = key;
+        this.keypair = keypair;
     }
 
     /**
-     * Returns the 16-byte Key ID
+     * Returns the KeyPair associated with this CryptKey
      * 
-     * @return the keyID
+     * @return the key pair
      */
-    public byte[] getKeyID() {
-        return keyID;
+    public KeyPair getKeyPair() {
+        return keypair;
     }
     
-    /**
-     * Returns the 16-byte AES encryption key
-     * 
-     * @return the key
-     */
-    public byte[] getKey() {
-        return key;
-    }
-
     /*
      * (non-Javadoc)
      * @see org.cablelabs.cryptfile.MP4BoxXML#generateXML(org.w3c.dom.Document)
@@ -61,8 +47,8 @@ public class CryptKey implements MP4BoxXML {
     public Node generateXML(Document d) {
         
         Element e = d.createElement(ELEMENT);
-        e.setAttribute(ATTR_KEYID, "0x" + Hex.encodeHexString(keyID));
-        e.setAttribute(ATTR_KEY, "0x" + Hex.encodeHexString(key));
+        e.setAttribute(ATTR_KEYID, "0x" + Hex.encodeHexString(keypair.getID()));
+        e.setAttribute(ATTR_KEY, "0x" + Hex.encodeHexString(keypair.getKey()));
         return e;
     }
 }

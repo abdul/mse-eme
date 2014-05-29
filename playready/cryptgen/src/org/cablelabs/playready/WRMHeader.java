@@ -44,7 +44,7 @@ public class WRMHeader {
     private Document doc;
     
     // Build a version 4.0.0.0 WRM Header
-    private void build4000Doc(PlayReadyKey key, String url, Element root) {
+    private void build4000Doc(PlayReadyKeyPair key, String url, Element root) {
         Element data = doc.createElement("DATA");
         root.appendChild(data);
         
@@ -70,12 +70,12 @@ public class WRMHeader {
     }
     
     // Build a version 4.1.0.0 WRM Header
-    private void build4100Doc(PlayReadyKey key, String url, Element root) {
+    private void build4100Doc(PlayReadyKeyPair key, String url, Element root) {
         // This is not working in my scripts yet, so I'm not going to implement it
         // here until I have a working test
     }
     
-    public WRMHeader(Version version, PlayReadyKey key, String url) {
+    public WRMHeader(Version version, PlayReadyKeyPair key, String url) {
         
         // Create a new document
         DocumentBuilder builder = null;

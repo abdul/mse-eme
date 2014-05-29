@@ -11,6 +11,7 @@ import org.cablelabs.cryptfile.CryptKey;
 import org.cablelabs.cryptfile.CryptTrack;
 import org.cablelabs.cryptfile.CryptfileBuilder;
 import org.cablelabs.cryptfile.DRMInfoPSSH;
+import org.cablelabs.cryptfile.KeyPair;
 import org.cablelabs.widevine.Track;
 import org.cablelabs.widevine.TrackType;
 import org.cablelabs.widevine.cryptfile.WidevinePSSH;
@@ -222,7 +223,8 @@ public class CryptfileGen {
                 
             // Get the keys for this track and add to our cryptfile
             List<CryptKey> keyList = new ArrayList<CryptKey>();
-            keyList.add(new CryptKey(Base64.decodeBase64(track.key_id), Base64.decodeBase64(track.key)));
+            keyList.add(new CryptKey(new KeyPair(Base64.decodeBase64(track.key_id),
+                                                 Base64.decodeBase64(track.key))));
             cryptTracks.add(new CryptTrack(track_args[track.type.ordinal()].id, 8, null,
                                            keyList, rollingKeySamples));
         }

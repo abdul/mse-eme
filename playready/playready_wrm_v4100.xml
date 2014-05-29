@@ -1,8 +1,0 @@
-<WRMHEADER version="4.1.0.0" xmlns="http://schemas.microsoft.com/DRM/2007/03/PlayReadyHeader">
-  <DATA>
-    <PROTECTINFO>
-      <KID value="AAAAEAAQABAQABAAAAAAAQ==" algid="AESCTR" checksum="5TzIYQ2hrOY="/>
-    </PROTECTINFO>
-    <LA_URL>http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&amp;UseSimpleNonPersistentLicense=1</LA_URL>
-  </DATA>
-</WRMHEADER>
