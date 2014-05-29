@@ -3,7 +3,6 @@ package org.cablelabs.widevine.cryptgen;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +33,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public class CryptfileGen {
 
     private static void usage() {
-        System.out.println("usage:  WidevineKeyRequest [OPTIONS] <cryptfile> <content_id> <track_id>:<track_type>] [<track_id>:<track_type>]...");
+        System.out.println("usage:  CryptfileGen [OPTIONS] <content_id> <track_id>:<track_type>] [<track_id>:<track_type>]...");
         System.out.println("");
-        System.out.println("\t<cryptfile> ");
         System.out.println("\t<content_id> is a unique string representing the content to be encrypted");
+        System.out.println("");
         System.out.println("\t<track_id> is the track ID from the MP4 file to be encrypted");
+        System.out.println("");
         System.out.println("\t<track_type> is one of HD, SD, or AUDIO describing the type of the associated track");
         System.out.println("");
         System.out.println("\tOPTIONS:");

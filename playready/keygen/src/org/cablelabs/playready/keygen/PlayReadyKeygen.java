@@ -1,7 +1,5 @@
-// Confidential material under the terms of the Limited Distribution Non-disclosure
-// Agreement between CableLabs and Comcast
 
-package org.cablelabs.playready;
+package org.cablelabs.playready.keygen;
 
 import java.util.Arrays;
 import java.security.InvalidKeyException;

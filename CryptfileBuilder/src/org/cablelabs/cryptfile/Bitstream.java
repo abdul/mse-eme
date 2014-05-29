@@ -12,7 +12,8 @@ import org.w3c.dom.Node;
  * Bitstream XML element used in definition of PSSH boxes in MP4Box cryptfiles.
  * 
  * To use, construct a default Bitstream, then use one of the setup* methods to set
- * data of a particular type
+ * data of a particular type.  You can re-use a single instance of this object
+ * multiple times to generate multiple XML elements.
  */
 public class Bitstream implements MP4BoxXML {
     
@@ -34,6 +35,7 @@ public class Bitstream implements MP4BoxXML {
     
     private enum BSType {
         VALUE,
+        VALUE_LE,
         FILE,
         STRING,
         FOURCC,
@@ -45,6 +47,7 @@ public class Bitstream implements MP4BoxXML {
     private static final String ELEMENT = "BS";
     private static final String ATTR_BITS = "bits";
     private static final String ATTR_VALUE = "value";
+    private static final String ATTR_ENDIAN = "endian";
     private static final String ATTR_STRING = "string";
     private static final String ATTR_FILE = "dataFile";
     private static final String ATTR_FILE_OFFSET = "dataOffset";
@@ -54,6 +57,12 @@ public class Bitstream implements MP4BoxXML {
     private static final String ATTR_DATA64 = "data64";
     private static final String ATTR_DATA = "data";
     
+    private void setupIntegerInternal(BSType type, int value, int bits) {
+        this.type = type;
+        this.value = value;
+        this.bits = bits;
+    }
+    
     /**
      * An integer value stored in the given number of bits
      * 
@@ -61,9 +70,18 @@ public class Bitstream implements MP4BoxXML {
      * @param bits the width of the field in bits (0-padded)
      */
     public void setupInteger(int value, int bits) {
-        type = BSType.VALUE;
-        this.value = value;
-        this.bits = bits;
+        setupIntegerInternal(BSType.VALUE, value, bits);
+    }
+    
+    /**
+     * An integer value stored in the given number of bits in
+     * little-endian format
+     * 
+     * @param value the integer value
+     * @param bits the width of the field in bits (0-padded)
+     */
+    public void setupIntegerLE(int value, int bits) {
+        setupIntegerInternal(BSType.VALUE_LE, value, bits);
     }
     
     /**
@@ -79,6 +97,7 @@ public class Bitstream implements MP4BoxXML {
         string = file;
         this.offset = offset;
         this.length = length;
+        bits = 0;
     }
     
     /**
@@ -89,6 +108,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupString(String string) {
         type = BSType.STRING;
         this.string = string;
+        bits = 0;
     }
     
     /**
@@ -114,7 +134,8 @@ public class Bitstream implements MP4BoxXML {
         if (fourcc.length != 4)
             throw new IllegalArgumentException("FOURCC data is not 4 characters long!");
         type = BSType.FOURCC;
-        this.string = new String(fourcc);
+        string = new String(fourcc);
+        bits = 0;
     }
     
     /**
@@ -127,6 +148,7 @@ public class Bitstream implements MP4BoxXML {
             throw new IllegalArgumentException("ID128 data is not 16 bytes in length!");
         type = BSType.ID128;
         data = id128;
+        bits = 0;
     }
     
     /**
@@ -137,6 +159,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupData(byte[] data) {
         type = BSType.DATA;
         this.data = data;
+        bits = 0;
     }
     
     /**
@@ -162,6 +185,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupDataHex(String hexData) throws DecoderException {
         type = BSType.DATA;
         data = Hex.decodeHex(hexData.toCharArray());
+        bits = 0;
     }
     
     /**
@@ -187,6 +211,7 @@ public class Bitstream implements MP4BoxXML {
     public void setupDataB64(String b64Data) {
         type = BSType.DATA64;
         data = Base64.decodeBase64(b64Data);
+        bits = 0;
     }
     
     /**
@@ -214,6 +239,9 @@ public class Bitstream implements MP4BoxXML {
             e.setAttribute(ATTR_BITS, Integer.toString(bits));
         
         switch (type) {
+        case VALUE_LE:
+            e.setAttribute(ATTR_ENDIAN, "little");
+            // fall through
         case VALUE:
             e.setAttribute(ATTR_VALUE, Integer.toString(value));
             break;
