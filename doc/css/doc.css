@@ -12,6 +12,10 @@
   overflow-y: scroll;
 }
 
+.image {
+  margin: 10px;
+}
+
 .navbar-custom {
   background: linear-gradient(#0063ff,#ffffff);
   border-color: #e7e7e7;
