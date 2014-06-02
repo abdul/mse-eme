@@ -6,13 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Hex;
+import org.cablelabs.clearkey.cryptfile.ClearKeyJsonPSSH;
+import org.cablelabs.clearkey.cryptfile.ClearKeyRemotePSSH;
 import org.cablelabs.cryptfile.CryptKey;
 import org.cablelabs.cryptfile.CryptTrack;
 import org.cablelabs.cryptfile.CryptfileBuilder;
 import org.cablelabs.cryptfile.DRMInfoPSSH;
+import org.cablelabs.cryptfile.KeyPair;
 import org.cablelabs.playready.PlayReadyKeyPair;
 import org.cablelabs.playready.WRMHeader;
 import org.cablelabs.playready.cryptfile.PlayReadyPSSH;
@@ -20,6 +26,8 @@ import org.cablelabs.playready.cryptfile.PlayReadyPSSH;
 public class CryptfileGen {
     
     private static void usage() {
+        System.out.println("Microsoft PlayReady MP4Box cryptfile generation tool.");
+        System.out.println("");
         System.out.println("usage:  CryptfileGen [OPTIONS] <track_id>:{@<keyid_file>|<key_id>[,<key_id>...]} [<track_id>:{@<keyid_file>|<key_id>[,<key_id>...]}]...");
         System.out.println("");
         System.out.println("\t<track_id> is the track ID from the MP4 file to be encrypted.");
@@ -50,6 +58,13 @@ public class CryptfileGen {
         System.out.println("\t-roll <sample_count>");
         System.out.println("\t\tUsed for rolling keys only.  <sample_count> is the number of consecutive samples to be");
         System.out.println("\t\tencrypted with each key before moving to the next.");
+        System.out.println("");
+        System.out.println("\t-ck_remote <url>");
+        System.out.println("\t\tAdd CableLabs 'Remote' ClearKey PSSH to the cryptfile.  <url> is the ClearKey server");
+        System.out.println("\t\tURL.");
+        System.out.println("");
+        System.out.println("\t-ck_json");
+        System.out.println("\t\tAdd CableLabs 'JSON' ClearKey PSSH to the cryptfile.");
     }
     
     private static class Track {
@@ -58,9 +73,7 @@ public class CryptfileGen {
     }
     
     private static void invalidOption(String option) {
-        usage();
-        System.err.println("Invalid argument specification for " + option);
-        System.exit(1);;
+        errorExit("Invalid argument specification for " + option);
     }
     
     // Check for the presence of an option argument and validate that there are enough sub-options to
@@ -89,6 +102,12 @@ public class CryptfileGen {
         return checkOption(optToCheck, args, current, subopts, subopts);
     }
     
+    private static void errorExit(String errorString) {
+        usage();
+        System.err.println(errorString);
+        System.exit(1);;
+    }
+    
     public static void main(String[] args) {
 
         // Rolling keys
@@ -98,6 +117,10 @@ public class CryptfileGen {
         String url = "http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&UseSimpleNonPersistentLicense=1";
         List<Track> tracks = new ArrayList<Track>();
         WRMHeader.Version headerVersion = WRMHeader.Version.V_4000;
+        
+        // Clearkey
+        boolean clearkey = false;
+        URL clearkey_url = null;
         
         // Parse arguments
         for (int i = 0; i < args.length; i++) {
@@ -117,9 +140,7 @@ public class CryptfileGen {
                         headerVersion = WRMHeader.Version.V_4000;
                     }
                     else {
-                        usage();
-                        System.err.println("Illegal WRMHeader version: " + subopts[0]);
-                        System.exit(1);
+                        errorExit("Illegal WRMHeader version: " + subopts[0]);
                     }
                     i++;
                 }
@@ -131,10 +152,21 @@ public class CryptfileGen {
                     url = subopts[0];
                     i++;
                 }
+                else if ((subopts = checkOption("-ck_json", args, i, 1)) != null) {
+                    clearkey = true;
+                }
+                else if ((subopts = checkOption("-ck_remote", args, i, 1)) != null) {
+                    try {
+                        clearkey_url = new URL(subopts[0]);
+                        clearkey = true;
+                    }
+                    catch (MalformedURLException e) {
+                        errorExit("Illegal clearkey URL: " + e.getMessage());
+                    }
+                    i++;
+                }
                 else {
-                    usage();
-                    System.err.println("Illegal argument: " + args[i]);
-                    System.exit(1);;
+                    errorExit("Illegal argument: " + args[i]);
                 }
                 
                 continue;
@@ -143,8 +175,7 @@ public class CryptfileGen {
             // Parse tracks
             String track_desc[] = args[i].split(":");
             if (track_desc.length != 2) {
-                usage();
-                System.exit(1);;
+                errorExit("Illegal track specification: " + args[i]);
             }
             try {
                 Track t = new Track();
@@ -170,19 +201,13 @@ public class CryptfileGen {
                 tracks.add(t);
             }
             catch (IllegalArgumentException e) {
-                usage();
-                System.err.println("Illegal track_type -- " + track_desc[1]);
-                System.exit(1);;
+                errorExit("Illegal track_type -- " + track_desc[1]);
             }
             catch (FileNotFoundException e) {
-                usage();
-                System.err.println("Key ID file not found: " + e.getMessage());
-                System.exit(1);;
+                errorExit("Key ID file not found: " + e.getMessage());
             }
             catch (IOException e) {
-                usage();
-                System.err.println("Error reading from Key ID file: " + e.getMessage());
-                System.exit(1);;
+                errorExit("Error reading from Key ID file: " + e.getMessage());
             }
         }
         
@@ -206,6 +231,34 @@ public class CryptfileGen {
         List<DRMInfoPSSH> psshList = new ArrayList<DRMInfoPSSH>();
         psshList.add(new PlayReadyPSSH(wrmHeaders));
         
+        // Add clearkey PSSH if requested
+        if (clearkey) {
+            if (clearkey_url != null) {
+                // Build list of all key IDs
+                List<String> keyIDs = new ArrayList<String>();
+                System.out.println("Ensure the following keys are installed on the ClearKey server:");
+                for (CryptTrack t : cryptTracks) {
+                    for (CryptKey key : t.getKeys()) {
+                        System.out.println("\t" + Hex.encodeHexString(key.getKeyPair().getID()) +
+                                           " : " + Hex.encodeHexString(key.getKeyPair().getKey()));
+                        keyIDs.add(Hex.encodeHexString(key.getKeyPair().getID()));
+                    }
+                }
+                System.out.println("");
+                psshList.add(new ClearKeyRemotePSSH(clearkey_url, keyIDs));
+            }
+            else {
+                // Build list of all key pairs
+                List<KeyPair> keys = new ArrayList<KeyPair>();
+                for (CryptTrack t : cryptTracks) {
+                    for (CryptKey key : t.getKeys()) {
+                        keys.add(key.getKeyPair());
+                    }
+                }
+                psshList.add(new ClearKeyJsonPSSH(keys));
+            }
+        }
+        
         // Create the cryptfile builder
         CryptfileBuilder cfBuilder = new CryptfileBuilder(CryptfileBuilder.ProtectionScheme.AES_CTR,
                                                           cryptTracks, psshList);
@@ -219,8 +272,7 @@ public class CryptfileGen {
             }
         }
         catch (FileNotFoundException e) {
-            System.err.println("Could not open output file (" + outfile + ") for writing");
-            System.exit(1);;
+            errorExit("Could not open output file (" + outfile + ") for writing");
         }
     }
 }

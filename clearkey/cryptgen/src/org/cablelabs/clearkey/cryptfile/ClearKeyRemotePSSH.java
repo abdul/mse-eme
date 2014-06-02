@@ -1,7 +1,6 @@
 
 package org.cablelabs.clearkey.cryptfile;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -27,11 +26,10 @@ public class ClearKeyRemotePSSH extends ClearKeyPSSH {
      * @param url the clearkey server url 
      * @param keyIDs a list of key IDs for keys that will be retrieved from
      * the server
-     * @throws MalformedURLException if the URL could not be parsed
      */
-    public ClearKeyRemotePSSH(String url, List<String> keyIDs) throws MalformedURLException {
+    public ClearKeyRemotePSSH(URL url, List<String> keyIDs) {
         super();
-        this.url = new URL(url);
+        this.url = url;
         this.keyIDs = keyIDs;
     }
     

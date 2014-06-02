@@ -46,6 +46,15 @@ public class KeyPair {
         return baos.toByteArray();
     }
     
+    private static byte[] parseHexKey(String hexKey) {
+        try {
+            return Hex.decodeHex(hexKey.toCharArray());
+        }
+        catch (DecoderException e) {
+            throw new IllegalArgumentException("Invalid hex key value: " + e.getMessage());
+        }
+    }
+    
     /**
      * Protected default constructor
      */
@@ -63,10 +72,11 @@ public class KeyPair {
     }
     
     /**
-     * Creates a key ID from the given GUID of the form
-     * (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx),
+     * Creates a key pair from the given GUID of the form
+     * (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) and the given key value,
      * 
      * @param guid the guid in standard form
+     * @param key the 16-byte key value
      */
     public KeyPair(String guid, byte[] key) {
         this(key);
@@ -74,9 +84,23 @@ public class KeyPair {
     }
     
     /**
-     * Creates a keyID from the given array of bytes
+     * Creates a key pair from the given GUID of the form
+     * (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) and the given key value
+     * in hexadecimal
+     * 
+     * @param guid the guid in standard form
+     * @param key the 16-byte key value in hex
+     */
+    public KeyPair(String guid, String key) {
+        this(parseHexKey(key));
+        keyID = parseGUID(guid);
+    }
+    
+    /**
+     * Creates a key pair from the given key id and key values
      * 
      * @param keyID the key ID in binary form
+     * @param key the 16-byte key value
      */
     public KeyPair(byte[] keyID, byte[] key) {
         this(key);

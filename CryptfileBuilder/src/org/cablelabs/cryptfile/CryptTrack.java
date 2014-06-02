@@ -134,6 +134,15 @@ public class CryptTrack implements MP4BoxXML {
     public void addKey(CryptKey key) {
         keys.add(key);
     }
+    
+    /**
+     * Return the list of keys associated with this track
+     * 
+     * @return the keys
+     */
+    public List<CryptKey> getKeys() {
+        return new ArrayList<CryptKey>(keys);
+    }
 
     /* (non-Javadoc)
      * @see org.cablelabs.cryptfile.MP4BoxXML#generateXML(org.w3c.dom.Document)
