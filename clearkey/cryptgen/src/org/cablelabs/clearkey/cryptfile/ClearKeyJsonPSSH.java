@@ -80,16 +80,16 @@ public class ClearKeyJsonPSSH extends ClearKeyPSSH {
         for (KeyPair keypair : keypairs) {
             ClearKeyJWK.Key key = new ClearKeyJWK.Key();
             
-            // Remove the padding characters from the Base64 encode
-            key.kid = Base64.encodeBase64String(keypair.getID()).replace("/=+$/", "");
-            key.k = Base64.encodeBase64String(keypair.getKey()).replace("/=+$/", "");
+            // Use the URL-safe variant because we expect no padding
+            key.kid = Base64.encodeBase64String(keypair.getID()).replaceAll("=", "");
+            key.k = Base64.encodeBase64String(keypair.getKey()).replaceAll("=", "");
             
             jwk.keys[i++] = key;
         }
 
         // Generate the element from the JSON string
         Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-        b.setupString(gson.toJson(jwk), 16);
+        b.setupString(Base64.encodeBase64String(gson.toJson(jwk).getBytes()), 16);
         e.appendChild(b.generateXML(d));
         
         return e;

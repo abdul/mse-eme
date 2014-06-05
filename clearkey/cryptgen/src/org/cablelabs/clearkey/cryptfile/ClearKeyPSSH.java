@@ -37,7 +37,7 @@ public abstract class ClearKeyPSSH extends DRMInfoPSSH {
         (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
         (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
         (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00,
-        (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
+        (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01
     };
     
     protected ClearKeyPSSH() {

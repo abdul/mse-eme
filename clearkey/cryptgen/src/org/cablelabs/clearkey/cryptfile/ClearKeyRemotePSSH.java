@@ -29,6 +29,7 @@ package org.cablelabs.clearkey.cryptfile;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.cablelabs.cryptfile.Bitstream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -83,7 +84,7 @@ public class ClearKeyRemotePSSH extends ClearKeyPSSH {
         }
         urlString = urlString.substring(0, urlString.length()-1);
         
-        b.setupString(urlString, 16);
+        b.setupString(Base64.encodeBase64String(urlString.getBytes()), 16);
         e.appendChild(b.generateXML(d));
         
         return e;
