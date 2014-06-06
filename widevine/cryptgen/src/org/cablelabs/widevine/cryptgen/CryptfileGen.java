@@ -182,7 +182,7 @@ public class CryptfileGen {
                     signingFile = subopts[0];
                     i++;
                 }
-                else if ((subopts = checkOption("-ck_json", args, i, 1)) != null) {
+                else if ((subopts = checkOption("-ck_json", args, i, 0)) != null) {
                     clearkey = true;
                 }
                 else if ((subopts = checkOption("-ck_remote", args, i, 1)) != null) {
