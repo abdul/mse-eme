@@ -114,7 +114,9 @@
           <p>The CableLabs player application is based on the <a href="https://github.com/Dash-Industry-Forum/dash.js/wiki">dashjs</a> reference implementation from the DASH Industry Forum.  Our version of the player can be found on <a href="https://github.com/greg80303/dash.js">github</a> in the "development" branch.  We've added the following features:</p>
           <ul>
             <li><strong>EME Debug Panel</strong>:  This expandable panel shows EME-specific log messages that hightlight the license retrieval process</li>
-            <li><strong>CableLabs Clear Key</strong>:  Processing for the CableLabs-defined Clear Key PSSH and subsequent license retrieval.</li>
+            <li><strong>Widevine DRM</strong>:  Added support for the 'com.widevine.alpha' key system.  At his time the player expects the Widevine DRM proxy server to be running at 'http://localhost:8025'.  We will make this more configurable in the future.</li>
+            <li><strong>CableLabs Clear Key DRM</strong>:  Processing for the CableLabs-defined Clear Key PSSH and subsequent license retrieval. The player looks for a 'pssh' with the <code>00000000-0000-0000-0000-000000000001</code> guid we have assigned to our implementation of Clear Key, parses the data and then adds the key(s) (possibly retrieved from a remote server) to the browser using the EME <span class="code">update()</span> API.</li>
+            <li><strong>Common Encryption</strong>:  When dealing with content that only uses Common Encryption, there is no indication in the MPD of which DRMs are available in the content.  This update allows us to utilize the 'initData' (basically a concatenated list of the PSSH boxes) to determine which DRMs are supported and then compare that list against the DRMs supported by the browser.</li>
           </ul>
 
           <h2>FAMIUM Player</h2>

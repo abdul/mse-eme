@@ -191,33 +191,30 @@ $ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
 
           <p>A helper script is provided with our tools to execute the MP4box encryption process on multiple files.  This is very helpful when encrypting multiple ABR content files.</p>
 
-          <div class="panel panel-success">
-            <div class="panel-heading">encrypt/encrypt.sh</div>
-            <div class="panel-body">
-              <pre><code class="scrollable-code">$ ./encrypt.sh
+          <div class="well">
+            <pre><code class="scrollable-code">$ ./encrypt.sh
 Encryption Script
 usage:
-   encrypt.sh -o &lt;output_directory&gt; -c &lt;cryptfile&gt; [-i &lt;input_directory&gt;] [INPUT_FILE]...
+ encrypt.sh -o &lt;output_directory&gt; -c &lt;cryptfile&gt; [-i &lt;input_directory&gt;] [INPUT_FILE]...
 
 OPTIONS
-  -o
-       The output directory where encrypted files will be written
+-o
+     The output directory where encrypted files will be written
 
-  -c
-       The cryptfile.  XML MP4Box input file used to define the encryption.
+-c
+     The cryptfile.  XML MP4Box input file used to define the encryption.
 
-  -i
-       All files in the given directory will be encrypted.  Can be used instead of or in addition
-       to the list of files at the end of the command
-              </code></pre>
-            </div>
+-i
+     All files in the given directory will be encrypted.  Can be used instead of or in addition
+     to the list of files at the end of the command
+            </code></pre>
           </div>
 
           <h3>CryptfileBuilder</h3>
 
           <p>CableLabs has developed a set of tools to assist in the generation of <em>cryptfiles</em>.  A cryptfile is the primary input to MP4Box that describes exactly how the content should be encrypted.  A cryptfile also specifies the contents of any 'pssh' boxes to be inserted into the encrypted content.  One of the CableLabs tools, CryptfileBuilder, is a Java library on top of which you can develop your own DRM-specific cryptfile generator applications.  It defines the basic building blocks for MP4Box cryptfiles including bitstream (<span class="code">&lt;BS&gt;</span>), crypt track (<span class="code">&lt;CryptTrack&gt;</span>), and key (<span class="code">&lt;key&gt;</span>) elements</p>
 
-          <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>.  In the following sections we details several DRM-specific tools CableLabs has developed using the CryptfileBuilder library.</p>
+          <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>.  In the following sections we detail several DRM-specific tools CableLabs has developed using the CryptfileBuilder library.</p>
 
           <h3 id="playready">Microsoft PlayReady</h3>
 
@@ -298,120 +295,115 @@ Checksum =
 
           <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.</p>
 
-          <div class="panel panel-success">
-            <div class="panel-heading">mp4/playready/encrypt.sh</div>
-            <div class="panel-body">
-              <pre><code class="scrollable-code"> #!/bin/bash
+          <p>There are a few fine details about how the WRM header object XML must be formatted in order to be properly parsed by a PlayReady CDM:</p>
 
-# Confidential material under the terms of the Limited Distribution Non-disclosure
-# Agreement between CableLabs and Comcast
-
-function usage {
-  echo ""
-  echo "PlayReady Encryption Script"
-  echo "usage:"
-  echo "   encrypt.sh -o &lt;output_directory&gt; -v [4000|4100] [-i &lt;input_directory&gt;] [INPUT_FILE]..."
-  echo ""
-  echo "OPTIONS"
-  echo "  -o"
-  echo "       The output directory where encrypted files will be written"
-  echo ""
-  echo "  -v"
-  echo "       The PlayReady Header Object version.  Must be either 4000 (4.0.0.0) or 4100 (4.1.0.0)"
-  echo ""
-  echo "  -i"
-  echo "       All files in the given directory will be encrypted.  Can be used instead of or in addition"
-  echo "       to the list of files at the end of the command"
-}
-
-while getopts ":o:v:i:" opt; do
-  case $opt in
-    o)
-      output_dir=$OPTARG
-      ;;
-    v)
-      pr_wrm_version=$OPTARG
-      ;;
-    i)
-      input_dir=$OPTARG
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" &gt;&amp;2
-      usage
-      exit 1
-      ;;
-    :)
-      echo "Missing options argument for -$OPTARG" &gt;&amp;2
-      usage
-      exit 1
-      ;;
-  esac
-done
-shift $((OPTIND - 1))
-
-if [ -z $pr_wrm_version ]; then
-  echo "Must provide PlayReady version argument (either 4000 or 4100)"
-  usage
-  exit 1
-fi
-if [ -z $output_dir ]; then
-  echo "Must provide output directory for encrypted media files"
-  usage
-  exit 1
-fi
-if [ -z $input_dir -a ${#@} -eq 0 ]; then
-  echo "No input media files specified!"
-  usage
-  exit 0
-fi
-
-pr_utf16file="wrm_utf16.xml"
-pr_cryptfile="cryptfile"
-
-# Remove all leading whitespace and then remove all end of line characters
-# Then convert to UTF-16LE
-sed 's/^[ \t]*//' playready_wrm_v${pr_wrm_version}.xml | tr -d '\r\n' | iconv -f UTF-8 -t UTF-16LE &gt; $pr_utf16file
-
-# Grab file size and insert into our crypt file template
-pr_wrm_size=`du -b $pr_utf16file | awk '{print $1}'`
-pr_total_size=`expr $size + 10`
-sed -e "s/___WRM_SIZE___/$pr_wrm_size/" \
-  -e "s/___PRHO_SIZE___/$pr_total_size/" \
-  -e "s/___WRM_FILE___/$pr_utf16file/" playready_cenc.xml &gt; $pr_cryptfile
-
-mkdir -p $output_dir
-
-# Encrypt all files in optional input directory
-if [ ! -z $input_dir ]; then
-  for file in `ls $input_dir`; do
-    MP4Box -crypt $pr_cryptfile $input_dir/$file -out $output_dir/`basename $file`
-  done
-fi
-
-# Encrypt individual files specified at the end of the command
-for file in $@; do
-  MP4Box -crypt $pr_cryptfile $file -out $output_dir/`basename $file`
-done
-
-rm $pr_cryptfile
-rm $pr_utf16file</code></pre>
-            </div>
-          </div>
-
-          <p>Lets walk through the functionality of this script to highlight the last little nuances of encrypting PlayReady content.</p>
           <ol>
-            <li>Remove all whitespace from the rights management header file that is not part of the XML structure and convert to UTF16 little-endian format. <em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.</li>
-            <li>Calculate the size of the newly "re-formatted" rights management header because it must be inserted into the cryptfile along with the filename itself. (A good enhancement to the MP4Box tool would be to insert the size automatically when adding the contents of a file.)</li>
-            <li>Calculate the total size of the PRO by adding 10 bytes; 4 bytes for the Record Type (2) and Record Length (2) fields for this record and 6 bytes for the Length (4) and PlayReady Record Count (2) fields of the PRO.</li>
-            <li>Execute sed scripts to replace the underscore fields in the template cryptfile to produce the actual file.</li>
-            <li>Execute MP4Box for each ABR profile to create the encrypted content files.</li>
+            <li>There can be no whitespace anywhere within the XML, except to separate XML attributes within an element.<em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.</li>
+            <li>When outputting the XML for insertion into the PSSH, you must use UTF-16, little-endian encoding</li>
           </ol>
+
+          <p>The entire process of generating a PlayReady cryptfile has been rolled up into a single tool in <span class="code">playready/cryptgen</span>.  Check out the arguments and options you can pass to this tool:</p>
+
+          <div class="well">
+            <pre><code class="scrollable-code">$ java -jar playready.jar -help
+Microsoft PlayReady MP4Box cryptfile generation tool.
+
+usage:  CryptfileGen [OPTIONS] &lt;track_id&gt;:{@&lt;keyid_file&gt;|&lt;key_id&gt;[,&lt;key_id&gt;...]} [&lt;track_id&gt;:{@&lt;keyid_file&gt;|&lt;key_id&gt;[,&lt;key_id&gt;...]}]...
+
+  &lt;track_id&gt; is the track ID from the MP4 file to be encrypted.
+  After the '&lt;track_id&gt;:', you can specify either a file containing key IDs OR a
+  comma-separated list of key IDs.  Key IDs are always represented in GUID form
+  (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Multiple key IDs indicate the use of
+  rolling keys.
+
+    &lt;keyid_file&gt; is a file that contains a list of key IDs, one key ID per line.
+
+    &lt;keyid&gt; is a key ID in GUID form.
+
+  OPTIONS:
+
+  -help
+    Display this usage message.
+
+  -out &lt;filename&gt;
+    If present, the cryptfile will be written to the given file. Otherwise output will be
+    written to stdout.
+
+  -version {4000|4100}
+    If present, specifies the WRMHeader version to generate.  Must be either '4000' for v4.0.0.0
+    or '4100' for v4.1.0.0.  Default is '4000'.
+
+  -url &lt;license_url&gt;
+    If present, specifies the license URL to embed in the WRMHeaders.  If not specified, will
+    use the default url of:
+    'http://playready.directtaps.net/pr/svc/rightsmanager.asmx?PlayRight=1&UseSimpleNonPersistentLicense=1'
+
+  -roll &lt;sample_count&gt;
+    Used for rolling keys only.  &lt;sample_count&gt; is the number of consecutive samples to be
+    encrypted with each key before moving to the next.
+
+  -ck_remote &lt;url&gt;
+    Add CableLabs 'Remote' ClearKey PSSH to the cryptfile.  &lt;url&gt; is the ClearKey server
+    URL.
+
+  -ck_json
+    Add CableLabs 'JSON' ClearKey PSSH to the cryptfile.
+            </code></pre>
+          </div>
 
           <h3 id="primetime">Adobe PrimeTime</h3>
 
           Coming Soon
 
           <h3 id="widevine">Google Widevine</h3>
+
+          <p>The process for generating a Widevine cryptfile has been by our tool located in <span class="code">widevine/cryptgen</span>.  Here are the arguments and options you can pass to this tool:</p>
+
+          <div class="well">
+            <pre><code class="scrollable-code">$ java -jar widevine.jar -help
+Google Widevine MP4Box cryptfile generation tool.
+
+usage:  CryptfileGen [OPTIONS] &lt;content_id&gt; &lt;track_id&gt;:&lt;track_type&gt;] [&lt;track_id&gt;:&lt;track_type&gt;]...
+
+  &lt;content_id&gt; is a unique string representing the content to be encrypted
+
+  &lt;track_id&gt; is the track ID from the MP4 file to be encrypted
+
+  &lt;track_type&gt; is one of HD, SD, or AUDIO describing the type of the associated track
+
+  OPTIONS:
+
+  -help
+    Display this usage message.
+
+  -out &lt;filename&gt;
+    If present, the cryptfile will be written to the given file. Otherwise output will be
+    written to stdout
+
+  -sign &lt;sign_props_file&gt;
+    If present, key requests will be signed with the given key information.  &lt;sign_props_file&gt; is
+    a Java properties file with the following properties:
+      url:      Your assigned key server URL
+      key:      Your assigned 32-byte signing key, base64 notation
+      iv:       Your assigned 16-byte initialization vector, base64 notation
+      provider: Your assigned provider name
+    If this argument is not present, the requests will be unsigned and the
+    "widevine_test" provider and URL will be used
+
+  -roll &lt;start_time&gt;,&lt;key_count&gt;,&lt;sample_count&gt;
+    Used for rolling keys only.  &lt;start_time&gt; is the integer time basis for the first
+    requested key.  Could be epoch or media time or anything else meaningful.  &lt;key_count&gt;
+    is the integer number of keys requested.  &lt;sample_count&gt; is the number of consecutive
+    samples to be encrypted with each key before moving to the next.
+
+  -ck_remote &lt;url&gt;
+    Add CableLabs 'Remote' ClearKey PSSH to the cryptfile.  &lt;url&gt; is the ClearKey server
+    URL.
+
+  -ck_json
+    Add CableLabs 'JSON' ClearKey PSSH to the cryptfile.
+            </code></pre>
+          </div>
 
           Coming Soon
 
@@ -454,69 +446,96 @@ rm $pr_utf16file</code></pre>
             </div>
           </div>
 
-          <p>We have arbitrarily and independently selected the GUID of <code>00000000-0000-0000-0000-000000000001</code> to use as the System ID for our Clear Key implementation.  This GUID is not regsistered with any central number registrar.  Below is an example MP4Box cryptfile showing an how to use our type 0 Clear Key implementation in content encryption.</p>
-          <div class="panel panel-success">
-            <div class="panel-heading">mp4/clearkey/clearkey_cenc.xml</div>
-            <div class="panel-body">
-              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+          <div class="well">
+            <pre><code class="scrollable-code">$ java -jar clearkey.jar -help
+CableLabs ClearKey MP4Box cryptfile generation tool.
+
+usage:  CryptfileGen [OPTIONS] &lt;track_id&gt;:{@&lt;key_file&gt;|&lt;key_id&gt;=&lt;key&gt;[,&lt;key_id&gt;:&lt;key&gt;...]} [&lt;track_id&gt;:{@&lt;key_file&gt;|&lt;key_id&gt;:&lt;key&gt;[,&lt;key_id&gt;:&lt;key&gt;...]}]...
+
+  &lt;track_id&gt; is the track ID from the MP4 file to be encrypted.
+  After the '&lt;track_id&gt;:', you can specify either a file containing key/keyID pairs
+  OR a comma-separated list of keyID/key pairs separated by '='.  Key IDs are always
+  represented in GUID form (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).  Key values are
+  always in hexadecimal.  Multiple key IDs indicate the use of rolling keys.
+
+    &lt;keyid_file is a file that contains a list of key pairs, one pair per line in
+    the form &lt;key_id&gt;:&lt;key&gt;
+
+    &lt;keyid&gt; is a key ID in GUID form.
+
+    &lt;key&gt; is a 16-byte key value in hexadecimal (with or without the leading '0x').
+
+  OPTIONS:
+
+  -help
+    Display this usage message.
+
+  -out &lt;filename&gt;
+    If present, the cryptfile will be written to the given file. Otherwise output will be
+    written to stdout.
+
+  -remote &lt;license_url&gt;
+    If present, the ClearKey PSSH for the content will indicate that the player should
+    contact the ClearKey server at the given URL for keys.  The default behavior is to
+    generate ClearKey PSSH with JSON Web Keys embedded directly
+
+  -roll &lt;sample_count&gt;
+    Used for rolling keys only.  &lt;sample_count&gt; is the number of consecutive samples to be
+    encrypted with each key before moving to the next.</code></pre>
+          </div>
+
+          <p>We have arbitrarily and independently selected the GUID of <code>00000000-0000-0000-0000-000000000001</code> to use as the System ID for our Clear Key implementation.  This GUID is not regsistered with any central number registrar.  Below is an example MP4Box cryptfile showing an how our type 1 Clear Key implementation appears in a cryptfile.</p>
+
+          <div class="well">
+            <pre><code>&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;GPACDRM type="CENC AES-CTR"&gt;
   &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="00000000000000000000000000000000" /&gt;  &lt;!-- ClearKey SystemID --&gt;
-    &lt;BS bits="8" value="0" /&gt;                        &lt;!-- ClearKey Type (0 = URL, 1 = JSON) --&gt;
-
-    &lt;!-- URL length and URL --&gt;
-    &lt;BS bits="16" string="http://localhost:8584/?keyid=10000000100010001000100000000001&amp;keyid=10000000100010001000100000000002" /&gt;
+    &lt;BS ID128="00000000000000000000000000000001"/&gt;
+    &lt;BS bits="8" value="1"/&gt;
+    &lt;BS bits="16" string="eyJrZXlzIjpbeyJrdHkiOiJvY3QiLCJhbGciOiJBMTI4R0NNIiwia2lkIjoiRUFBQUFCQUFFQUFRQUJBQUFBQUFBUSIsImsiOiJPaW9iYU4wcjJiTHVzbDZFeEhkbWFBIn0seyJrdHkiOiJvY3QiLCJhbGciOiJBMTI4R0NNIiwia2lkIjoiRUFBQUFCQUFFQUFRQUJBQUFBQUFBZyIsImsiOiJCK1RXVTgrMFhHWVZqWlAvemtJcEJ3In1dfQ=="/&gt;
   &lt;/DRMInfo&gt;
-
-  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" &gt;
-    &lt;key KID="0x10000000100010001000100000000002" value="0x07E4D653CFB45C66158D93FFCE422907" /&gt;
+  &lt;CrypTrack IV_size="8" first_IV="0xac6d700f43cb2e03" isEncrypted="1" saiSavedBox="senc" trackID="1"&gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x3a2a1b68dd2bd9b2eeb25e84c4776668"/&gt;
+  &lt;/CrypTrack&gt;
+  &lt;CrypTrack IV_size="8" first_IV="0x169dd6397f12c11a" isEncrypted="1" saiSavedBox="senc" trackID="2"&gt;
+    &lt;key KID="0x10000000100010001000100000000002" value="0x07e4d653cfb45c66158d93ffce422907"/&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
             </div>
           </div>
 
-          <h4>dash.js Player</h4>
-
-          <p>We have added support to the dash.js player for parsing the Clear Key 'pssh' from the <span class="code">initData</span> attribute of the <span class="code">needkey</span> EME event.  The player looks for a 'pssh' with the <code>00000000-0000-0000-0000-000000000000</code> guid we have assigned to our implementation of Clear Key, parses the data and then adds the key(s) (possibly retrieved from a remote server) to the browser using the EME <span class="code">update()</span> API.  See the <span class="code">clearkeyGetUpdate()</span> function in <span class="code">app/js/streaming/ProtectionExtensions.js</span>.</p>
-
           <h3 id="multi_drm">Common Encryption Multi-DRM</h3>
 
           <p>One of the fundamental benfits of Common Encryption is the ability to encrypt content once while still supporting multiple proprietary DRM systems.  Up until this point, we have only demonstrated the encryption of content using a single DRM.  This section takes what we have learned in the previous sections and describes how to use MP4Box to encrypt a piece of content with multiple key systems that can be played back on the disparate platforms that support those systems.</p>
 
-          <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content;  you just add multiple <span class="code">&lt;DRMInfo&gt;</span> elements to the cryptfile.  Each one will introduce a new 'pssh' box into the content.</p>
+          <p>With MP4Box, it is quite simple to apply multiple DRMs to a piece of content;  you just add multiple <span class="code">&lt;DRMInfo&gt;</span> elements to the cryptfile.  Each one will introduce a new 'pssh' box into the content. </p>
 
-          <div class="panel panel-success">
-            <div class="panel-heading">mp4/multiple_enc/cenc_pr_ck.xml</div>
-            <div class="panel-body">
-              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+          <div class="well">
+            <pre><code>&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;GPACDRM type="CENC AES-CTR"&gt;
   &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="00000000000000000000000000000000" /&gt;  &lt;!-- ClearKey SystemID --&gt;
-    &lt;BS bits="8" value="0" /&gt;                        &lt;!-- ClearKey Type (0 = URL, 1 = JSON) --&gt;
-
-    &lt;!-- URL length and URL --&gt;
-    &lt;BS bits="16" string="http://localhost:8584/?keyid=10000000100010001000100000000001&amp;keyid=10000000100010001000100000000002" /&gt;
+    &lt;BS ID128="9a04f07998404286ab92e65be0885f95"/&gt;
+    &lt;BS bits="32" endian="little" value="762"/&gt;
+    &lt;BS bits="16" endian="little" value="1"/&gt;
+    &lt;BS bits="16" endian="little" value="1"/&gt;
+    &lt;BS bits="16" endian="little" value="752"/&gt;
+    &lt;BS data64="PABXAFIATQBIAEUAQQBEAEUAUgAgAHgAbQBsAG4AcwA9ACIAaAB0AHQAcAA6AC8ALwBzAGMAaABlAG0AYQBzAC4AbQBpAGMAcgBvAHMAbwBmAHQALgBjAG8AbQAvAEQAUgBNAC8AMgAwADAANwAvADAAMwAvAFAAbABhAHkAUgBlAGEAZAB5AEgAZQBhAGQAZQByACIAIAB2AGUAcgBzAGkAbwBuAD0AIgA0AC4AMAAuADAALgAwACIAPgA8AEQAQQBUAEEAPgA8AFAAUgBPAFQARQBDAFQASQBOAEYATwA+ADwASwBFAFkATABFAE4APgAxADYAPAAvAEsARQBZAEwARQBOAD4APABBAEwARwBJAEQAPgBBAEUAUwBDAFQAUgA8AC8AQQBMAEcASQBEAD4APAAvAFAAUgBPAFQARQBDAFQASQBOAEYATwA+ADwASwBJAEQAPgBBAEEAQQBBAEUAQQBBAFEAQQBCAEEAUQBBAEIAQQBBAEEAQQBBAEEAQQBRAD0APQA8AC8ASwBJAEQAPgA8AEMASABFAEMASwBTAFUATQA+ADUAVAB6AEkAWQBRADIAaAByAE8AWQA9ADwALwBDAEgARQBDAEsAUwBVAE0APgA8AEwAQQBfAFUAUgBMAD4AaAB0AHQAcAA6AC8ALwBwAGwAYQB5AHIAZQBhAGQAeQAuAGQAaQByAGUAYwB0AHQAYQBwAHMALgBuAGUAdAAvAHAAcgAvAHMAdgBjAC8AcgBpAGcAaAB0AHMAbQBhAG4AYQBnAGUAcgAuAGEAcwBtAHgAPwBQAGwAYQB5AFIAaQBnAGgAdAA9ADEAJgBhAG0AcAA7AFUAcwBlAFMAaQBtAHAAbABlAE4AbwBuAFAAZQByAHMAaQBzAHQAZQBuAHQATABpAGMAZQBuAHMAZQA9ADEAPAAvAEwAQQBfAFUAUgBMAD4APAAvAEQAQQBUAEEAPgA8AC8AVwBSAE0ASABFAEEARABFAFIAPgA="/&gt;
   &lt;/DRMInfo&gt;
-
   &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;  &lt;!-- PlayReady SystemID --&gt;
-    &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
-
-    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt;     &lt;!-- PlayReady Header Object Size --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Number of records --&gt;
-
-    &lt;!-- First record --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Rights Management record type --&gt;
-    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;     &lt;!-- Record length --&gt;
-    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;           &lt;!-- WRM in external file --&gt;
+    &lt;BS ID128="00000000000000000000000000000001"/&gt;
+    &lt;BS bits="8" value="1"/&gt;
+    &lt;BS bits="16" string="eyJrZXlzIjpbeyJrdHkiOiJvY3QiLCJhbGciOiJBMTI4R0NNIiwia2lkIjoiRUFBQUFCQUFFQUFRQUJBQUFBQUFBUSIsImsiOiJPaW9iYU4wcjJiTHVzbDZFeEhkbWFBIn1dfQ=="/&gt;
   &lt;/DRMInfo&gt;
-
-  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x7DF7C12E832F9726" saiSavedBox="senc" &gt;
-    &lt;key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" /&gt;
+  &lt;CrypTrack IV_size="8" first_IV="0x8bdb060ffd68016d" isEncrypted="1" saiSavedBox="senc" trackID="1"&gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x3a2a1b68dd2bd9b2eeb25e84c4776668"/&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
             </div>
           </div>
 
           <p>There is an interesting caveat when using our tools to do multi-DRM Common Encryption;  KeyID and decryption key must be the same across all DRMs.  Content samples are only encrypted with a single key/keyID.  Multiple keys can be used to encrypt a single piece of content (rolling keys), but only a single key per individual media sample.  With the PlayReady test server, we can't install our own keys manually.  We must rely on the key generation algorithm.  Luckily, our Clear Key test server is completely under our control and we can simply install the same key generated by the PlayReady algorithm.  In commercial deployments, DRM license servers must support the manual installation of keys so that a single content encryption process can select the keyID and key and then install it across all DRM servers.</p>
+
+          <p>Our current situation is that we only have control of both keys and key IDs from within our ClearKey environment.  The other DRMs we are using have test servers that control the generation (or at least the method of generation) of encryption keys.  Therefore we can currently only do multi-DRM encryption with ClearKey and one other.  Please note the <span class="code">-ck_remote</span> and <span class="code">-ck_json</span> arguments supported by our cryptfile generation tools.  Refer to the specific tool's usage: for more information.</p>
 
           <h2 id="packaging">DASH Segmenting and Packaging</h2>
 
