@@ -192,9 +192,23 @@ $ avconv -i input_1080p.mov -vf "scale=w=1920:h=1080"
           <p>A helper script is provided with our tools to execute the MP4box encryption process on multiple files.  This is very helpful when encrypting multiple ABR content files.</p>
 
           <div class="panel panel-success">
-            <div class="panel-heading">mp4/playready/encrypt.sh</div>
+            <div class="panel-heading">encrypt/encrypt.sh</div>
             <div class="panel-body">
-              <pre><code class="scrollable-code">
+              <pre><code class="scrollable-code">$ ./encrypt.sh
+Encryption Script
+usage:
+   encrypt.sh -o &lt;output_directory&gt; -c &lt;cryptfile&gt; [-i &lt;input_directory&gt;] [INPUT_FILE]...
+
+OPTIONS
+  -o
+       The output directory where encrypted files will be written
+
+  -c
+       The cryptfile.  XML MP4Box input file used to define the encryption.
+
+  -i
+       All files in the given directory will be encrypted.  Can be used instead of or in addition
+       to the list of files at the end of the command
               </code></pre>
             </div>
           </div>
@@ -257,29 +271,24 @@ Checksum =
             <pre class="text-center">A1B1C1D1-A2B2-A3B3-A4B4-A5B5C5D5E5F5<br>D1C1B1A1-B2A2-B3A3-A4B4-A5B5C5D5E5F5</pre>
           </div>
 
-          <h4>PlayReady Encryption with MP4Box</h4>
+          <h4>PlayReady Cryptfile Generator</h4>
 
-
-          <p><span class="code">cryptfile</span> is the XML file that describes how MP4Box is to encrypt the content.  Here is the template cryptfile from our playready examples</p>
+          <p>Our PlayReady Cryptfile Generator tool performs all of the previous steps to create a cryptfile that will allow MP4Box to encrypt multiple tracks (potentianlly with multiple keys per track).  Here is an example of what a complete PlayReady cryptfile would look like:</p>
 
           <div class="panel panel-success">
             <div class="panel-body">
-              <pre><code>&lt;GPACDRM type="CENC AES-CTR"&gt;
+              <pre><code>&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;GPACDRM type="CENC AES-CTR"&gt;
   &lt;DRMInfo type="pssh" version="0"&gt;
-    &lt;BS ID128="9a04f07998404286ab92e65be0885f95" /&gt;  &lt;!-- PlayReady SystemID --&gt;
-    &lt;!--MP4Box automaically inserts the 32-bit PSSH size field here --&gt;
-
-    &lt;BS bits="32" value="___PRHO_SIZE___" endian="little" /&gt;     &lt;!-- PlayReady Header Object Size --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Number of records --&gt;
-
-    &lt;!-- First record --&gt;
-    &lt;BS bits="16" value="1" endian="little" /&gt;       &lt;!-- Rights Management record type --&gt;
-    &lt;BS bits="16" value="___WRM_SIZE___" endian="little" /&gt;     &lt;!-- Record length --&gt;
-    &lt;BS dataFile="___WRM_FILE___" dataLength="0" /&gt;           &lt;!-- WRM in external file --&gt;
+    &lt;BS ID128="9a04f07998404286ab92e65be0885f95"/&gt;
+    &lt;BS bits="32" endian="little" value="762"/&gt;
+    &lt;BS bits="16" endian="little" value="1"/&gt;
+    &lt;BS bits="16" endian="little" value="1"/&gt;
+    &lt;BS bits="16" endian="little" value="752"/&gt;
+    &lt;BS data64="PABXAFIATQBIAEUAQQBEAEUAUgAgAHgAbQBsAG4AcwA9ACIAaAB0AHQAcAA6AC8ALwBzAGMAaABlAG0AYQBzAC4AbQBpAGMAcgBvAHMAbwBmAHQALgBjAG8AbQAvAEQAUgBNAC8AMgAwADAANwAvADAAMwAvAFAAbABhAHkAUgBlAGEAZAB5AEgAZQBhAGQAZQByACIAIAB2AGUAcgBzAGkAbwBuAD0AIgA0AC4AMAAuADAALgAwACIAPgA8AEQAQQBUAEEAPgA8AFAAUgBPAFQARQBDAFQASQBOAEYATwA+ADwASwBFAFkATABFAE4APgAxADYAPAAvAEsARQBZAEwARQBOAD4APABBAEwARwBJAEQAPgBBAEUAUwBDAFQAUgA8AC8AQQBMAEcASQBEAD4APAAvAFAAUgBPAFQARQBDAFQASQBOAEYATwA+ADwASwBJAEQAPgBBAEEAQQBBAEUAQQBBAFEAQQBCAEEAUQBBAEIAQQBBAEEAQQBBAEEAQQBRAD0APQA8AC8ASwBJAEQAPgA8AEMASABFAEMASwBTAFUATQA+ADUAVAB6AEkAWQBRADIAaAByAE8AWQA9ADwALwBDAEgARQBDAEsAUwBVAE0APgA8AEwAQQBfAFUAUgBMAD4AaAB0AHQAcAA6AC8ALwBwAGwAYQB5AHIAZQBhAGQAeQAuAGQAaQByAGUAYwB0AHQAYQBwAHMALgBuAGUAdAAvAHAAcgAvAHMAdgBjAC8AcgBpAGcAaAB0AHMAbQBhAG4AYQBnAGUAcgAuAGEAcwBtAHgAPwBQAGwAYQB5AFIAaQBnAGgAdAA9ADEAJgBhAG0AcAA7AFUAcwBlAFMAaQBtAHAAbABlAE4AbwBuAFAAZQByAHMAaQBzAHQAZQBuAHQATABpAGMAZQBuAHMAZQA9ADEAPAAvAEwAQQBfAFUAUgBMAD4APAAvAEQAQQBUAEEAPgA8AC8AVwBSAE0ASABFAEEARABFAFIAPgA="/&gt;
   &lt;/DRMInfo&gt;
-
-  &lt;CrypTrack trackID="1" IsEncrypted="1" IV_size="8" first_IV="0x11CB1F13C2DB205A" saiSavedBox="senc" &gt;
-    &lt;key KID="0x10000000100010001000100000000001" value="0x3A2A1B68DD2BD9B2EEB25E84C4776668" /&gt;
+  &lt;CrypTrack IV_size="8" first_IV="0x81171442af182143" isEncrypted="1" saiSavedBox="senc" trackID="1"&gt;
+    &lt;key KID="0x10000000100010001000100000000001" value="0x3a2a1b68dd2bd9b2eeb25e84c4776668"/&gt;
   &lt;/CrypTrack&gt;
 &lt;/GPACDRM&gt;</code></pre>
             </div>
@@ -287,7 +296,7 @@ Checksum =
 
           <p>Let's look at the bottom portion of the file first.  You can add a <span class="code">CrypTrack</span> element for each track in the content that you want to encrypt (identified by its track ID from the Track Header ('tkhd') box).  Within that element, you can specific one or more encryption keys and associated key ID.  If you provide more than one key, use the <span class="code">roll</span> attribute of the <span class="code">CrypTrack</span> element to indicate how many samples should be encrypted with each key.</p>
 
-          <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.  The XML attribute values surrounded by underscores are replaced at runtime by a special script that is part of our tools.  An excerpt from that script is shown below:</p>
+          <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.</p>
 
           <div class="panel panel-success">
             <div class="panel-heading">mp4/playready/encrypt.sh</div>
