@@ -67,6 +67,9 @@ public class CryptfileGen {
         System.out.println("");
         System.out.println("\tOPTIONS:");
         System.out.println("");
+        System.out.println("\t-help");
+        System.out.println("\t\tDisplay this usage message.");
+        System.out.println("");
         System.out.println("\t-out <filename>");
         System.out.println("\t\tIf present, the cryptfile will be written to the given file. Otherwise output will be");
         System.out.println("\t\twritten to stdout.");
@@ -153,7 +156,11 @@ public class CryptfileGen {
             // Parse options
             if (args[i].startsWith("-")) {
                 String[] subopts;
-                if ((subopts = checkOption("-out", args, i, 1)) != null) {
+                if ((subopts = checkOption("-help", args, i, 0)) != null) {
+                    usage();
+                    System.exit(0);
+                }
+                else if ((subopts = checkOption("-out", args, i, 1)) != null) {
                     outfile = subopts[0];
                     i++;
                 }
