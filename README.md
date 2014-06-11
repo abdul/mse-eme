@@ -28,3 +28,12 @@ Our tools will include support for proprietary and open DRM systems as documenta
 
 For playback of encrypted DASH content using MSE/EME, we have augmented the dash.js player to support some additional DRMs.  Also, we have added an EME-specific logging window to highlight the EME process as it takes place.  Finally, we have improved support for playback of content that uses ISO Common Encryption.
 
+## 3rd Party Acknowledgments
+
+Our tools rely heavily on the following great open source and/or free library projects
+
+* [LibAV](http://libav.org/): transcoding and adaptive bitrate generation
+* [MP4Box](http://gpac.wp.mines-telecom.fr/mp4box/): encryption and MPEG-DASH packaging
+* [x264](http://www.videolan.org/developers/x264.html): AVC/H.264 codec for video
+* [libfdk_aac](http://www.iis.fraunhofer.de/en/bf/amm/implementierungen/fdkaaccodec.html): Fraunhofer FDK AAC codec for audio
+
