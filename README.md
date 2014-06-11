@@ -12,6 +12,10 @@ The current CableLabs reference tools are designed to generate content using a s
 * MPEG-DASH Adaptive Bitrate Packaging
 * ISO Common Encryption
 
+## Documentation
+
+See the latest documentation [here](https://html5.cablelabs.com/mse-eme/doc/overview.html)
+
 ## DRM
 
 Our tools will include support for proprietary and open DRM systems as documentation and test servers are made available to us.  Here is a table that indicates the current status of each DRM with our tools.
