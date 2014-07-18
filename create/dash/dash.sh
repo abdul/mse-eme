@@ -95,6 +95,6 @@ fi
 
 mkdir -p $output_dir
 
-MP4Box -dash 10000 -rap -bs-switching no -sample-groups-traf \
+MP4Box -dash 10000 -frag 5000 -rap -bs-switching no -sample-groups-traf \
   -profile $profile -out $output_dir/$mpd_file $@ 
 
