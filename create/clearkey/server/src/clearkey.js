@@ -30,6 +30,10 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 
+console.log("");
+console.log("CableLabs ClearKey License Server");
+console.log("");
+
 keys = {
     '10000000100010001000100000000001': new Buffer("3A2A1B68DD2BD9B2EEB25E84C4776668", 'hex'),
     '10000000100010001000100000000002': new Buffer("07E4D653CFB45C66158D93FFCE422907", 'hex'),
@@ -60,8 +64,11 @@ http.createServer(function(req, res) {
     var parsed_url = url.parse(req.url, true);
     var query = parsed_url.query;
 
+    console.log("Received key request!  Query = %j", query);
+
     // Validate query string
     if (query === undefined || query.keyid === undefined) {
+        console.error("Illegal request!");
         res.writeHeader(400, "Illegal query string");
         res.end();
     }
@@ -75,6 +82,11 @@ http.createServer(function(req, res) {
 
     var jwk_array = [];
     for (var i = 0; i < keyIDs.length; i++) {
+        var keyID = keyIDs[i];
+        if (!keys.hasOwnProperty(keyID)) {
+            console.warn("KeyID %s not registered in our lookup table!", keyID);
+            continue;
+        }
         var jwk = {
             kty: "oct",
             alg: "A128GCM",
@@ -86,6 +98,7 @@ http.createServer(function(req, res) {
     var response = {
         keys: jwk_array
     };
+    console.log("Returning JWK: %j", response);
     var json_str_response = JSON.stringify(response);
     addCORSHeaders(res, json_str_response.length);
     res.write(json_str_response);
