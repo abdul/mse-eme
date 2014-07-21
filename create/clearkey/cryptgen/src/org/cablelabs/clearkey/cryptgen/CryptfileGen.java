@@ -211,7 +211,7 @@ public class CryptfileGen {
                 tracks.add(t);
             }
             catch (IllegalArgumentException e) {
-                errorExit("Illegal track specification -- " + track_desc[1]);
+                errorExit("Illegal track specification (" + e.getMessage() + ") -- " + track_desc[1]);
             }
             catch (FileNotFoundException e) {
                 errorExit("Key ID file not found: " + e.getMessage());
