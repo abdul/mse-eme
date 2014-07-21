@@ -68,8 +68,8 @@ public class ClearKeyRemotePSSH extends ClearKeyPSSH {
         Element e = generateDRMInfo(d);
         Bitstream b = new Bitstream();
         
-        // ClearKey Type = 1 for JSON
-        b.setupInteger(1, 8);
+        // ClearKey Type = 0 for Remote
+        b.setupInteger(0, 8);
         e.appendChild(b.generateXML(d));
         
         String urlString = url.toString();
