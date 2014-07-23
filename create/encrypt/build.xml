@@ -1,0 +1,66 @@
+
+<project name="MP4Box Cryptfile Generators" default="all" basedir=".">
+
+  <!-- Proejct paths -->
+  <property name="builder-dir" location="CryptfileBuilder" />
+  <property name="clearkey-dir" location="clearkey/cryptgen" />
+  <property name="playready-dir" location="playready/cryptgen" />
+  <property name="widevine-dir" location="widevine/cryptgen" />
+
+  <!-- Libraries -->
+  <property name="commons-codec-jar" location="${builder-dir}/lib/commons-codec/commons-codec-1.9.jar" />
+  <property name="gson-jar" location="${builder-dir}/lib/google-gson-2.2.4/gson-2.2.4.jar" />
+  <property name="protobuf-jar" location="${widevine-dir}/lib/protobuf/protobuf.jar" />
+
+  <target name="all" depends="cryptfile-builder,clearkey,playready,widevine" />
+
+  <target name="clean">
+    <delete dir="${builder-dir}/bin" />
+    <delete dir="${clearkey-dir}/bin" />
+    <delete file="${clearkey-dir}/clearkey.jar" />
+    <delete dir="${playready-dir}/bin" />
+    <delete file="${playready-dir}/playready.jar" />
+    <delete dir="${widevine-dir}/bin" />
+    <delete file="${widevine-dir}/widevine.jar" />
+  </target>
+
+  <target name="cryptfile-builder">
+    <mkdir dir="${builder-dir}/bin" />
+    <javac srcdir="${builder-dir}/src" destdir="${builder-dir}/bin" />
+  </target>
+
+  <target name="clearkey" depends="cryptfile-builder" >
+    <mkdir dir="${clearkey-dir}/bin" />
+    <javac srcdir="${clearkey-dir}/src" destdir="${clearkey-dir}/bin"
+      classpath="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+    <jar destfile="${clearkey-dir}/clearkey.jar" basedir="${clearkey-dir}/bin">
+      <manifest>
+        <attribute name="Main-Class" value="org.cablelabs.clearkey.cryptgen.CrypfileGen" />
+      </manifest>
+    </jar>
+
+  </target>
+
+  <target name="playready" depends="cryptfile-builder,clearkey">
+    <mkdir dir="${playready-dir}/bin" />
+    <javac srcdir="${playready-dir}/src" destdir="${playready-dir}/bin"
+      classpath="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+    <jar destfile="${playready-dir}/playready.jar" basedir="${playready-dir}/bin">
+      <manifest>
+        <attribute name="Main-Class" value="org.cablelabs.playready.cryptgen.CrypfileGen" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="widevine" depends="cryptfile-builder,clearkey">
+    <mkdir dir="${widevine-dir}/bin" />
+    <javac srcdir="${widevine-dir}/src" destdir="${widevine-dir}/bin"
+      classpath="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}:${protobuf-jar}" />
+    <jar destfile="${widevine-dir}/widevine.jar" basedir="${widevine-dir}/bin">
+      <manifest>
+        <attribute name="Main-Class" value="org.cablelabs.widevine.cryptgen.CrypfileGen" />
+      </manifest>
+    </jar>
+  </target>
+
+</project>
