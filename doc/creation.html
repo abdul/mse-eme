@@ -195,7 +195,9 @@ OPTIONS
 
           <h3>CryptfileBuilder</h3>
 
-          <p>CableLabs has developed a set of tools to assist in the generation of <em>cryptfiles</em>.  A cryptfile is the primary input to MP4Box that describes exactly how the content should be encrypted.  A cryptfile also specifies the contents of any 'pssh' boxes to be inserted into the encrypted content.  One of the CableLabs tools, CryptfileBuilder, is a Java library on top of which you can develop your own DRM-specific cryptfile generator applications.  It defines the basic building blocks for MP4Box cryptfiles including bitstream (<span class="code">&lt;BS&gt;</span>), crypt track (<span class="code">&lt;CryptTrack&gt;</span>), and key (<span class="code">&lt;key&gt;</span>) elements</p>
+          <p>CableLabs has developed a set of tools to assist in the generation of <em>cryptfiles</em>.  A cryptfile is the primary input to MP4Box that describes exactly how the content should be encrypted.  A cryptfile also specifies the contents of any 'pssh' boxes to be inserted into the encrypted content.  One of the CableLabs tools, CryptfileBuilder, is a Java library on top of which you can develop your own DRM-specific cryptfile generator applications.  It defines the basic building blocks for MP4Box cryptfiles including bitstream (<span class="code">&lt;BS&gt;</span>), crypt track (<span class="code">&lt;CryptTrack&gt;</span>), and key (<span class="code">&lt;key&gt;</span>) elements.</p>
+
+          <p>A top-level <a href="http://ant.apache.org/">Ant</a> build script is provided to build all of the current cryptfile generators.  The build script is located in <span class="code">create/encrypt</span> subfolder of the source repository.  You must have Ant and Java installed on your system and available in your executable PATH.</p>
 
           <p>Using MP4Box to do Common Encryption is pretty well documented <a href="http://gpac.wp.mines-telecom.fr/mp4box/encryption/common-encryption/">here</a>.  In the following sections we detail several DRM-specific tools CableLabs has developed using the CryptfileBuilder library.</p>
 
@@ -278,7 +280,7 @@ Checksum =
 
           <p>The <span class="code">DRMInfo</span> element defines the 'pssh' box that will be inserted into the encrypted content.  As per the Common Encryption spec, the DRM type is identified by the 16-byte GUID "System ID" field followed by the DRM-specific data.  The <span class="code">CrypTrack</span> element identifies a track within the source media to be encrypted and associates one or more encryption key/keyID pairs to perform the encryption.</p>
 
-          <p>There are a few fine details about how the WRM header object XML must be formatted in order to be properly parsed by a PlayReady CDM:</p>
+          <p>There are a few fine details about how the WRM header object XML must be formatted in order to be properly parsed by a PlayReady CDM.  This information is provided simply for a better understanding of the PlayReady DRM syntax -- the cryptfile generation tool takes care of all of these details for you.</p>
 
           <ol>
             <li>There can be no whitespace anywhere within the XML, except to separate XML attributes within an element.<em><b>This step is essential.</b></em>  If you leave even a single newline character in the file, the CDM will not successfully parse it.</li>
