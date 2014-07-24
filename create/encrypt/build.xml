@@ -54,20 +54,20 @@
     <mkdir dir="${builder-dir}/bin" />
     <javac includeantruntime="false"
       srcdir="${builder-dir}/src" destdir="${builder-dir}/bin" 
-      classpath="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+      classpath="${builder-dir}/bin/:${commons-codec-jar}:${gson-jar}" />
   </target>
 
   <target name="clearkey" depends="cryptfile-builder" >
     <mkdir dir="${clearkey-dir}/bin" />
     <javac includeantruntime="false"
       srcdir="${clearkey-dir}/src" destdir="${clearkey-dir}/bin"
-      classpath="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+      classpath="${builder-dir}/bin/:${commons-codec-jar}:${gson-jar}" />
     <jar destfile="${clearkey-dir}/clearkey.jar" basedir="${clearkey-dir}/bin">
       <manifest>
         <attribute name="Main-Class"
           value="org.cablelabs.clearkey.cryptgen.CryptfileGen" />
         <attribute name="Class-Path"
-          value="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+          value="${builder-dir}/bin/ ${commons-codec-jar} ${gson-jar}" />
       </manifest>
     </jar>
   </target>
@@ -76,13 +76,13 @@
     <mkdir dir="${playready-dir}/bin" />
     <javac includeantruntime="false"
       srcdir="${playready-dir}/src" destdir="${playready-dir}/bin"
-      classpath="${builder-dir}/bin:${clearkey-dir}/bin:${commons-codec-jar}:${gson-jar}" />
+      classpath="${builder-dir}/bin/:${clearkey-dir}/bin:${commons-codec-jar}:${gson-jar}" />
     <jar destfile="${playready-dir}/playready.jar" basedir="${playready-dir}/bin">
       <manifest>
         <attribute name="Main-Class"
           value="org.cablelabs.playready.cryptgen.CryptfileGen" />
         <attribute name="Class-Path"
-          value="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}:${clearkey-dir}/bin" />
+          value="${builder-dir}/bin/ ${commons-codec-jar} ${gson-jar} ${clearkey-dir}/bin/" />
       </manifest>
     </jar>
   </target>
@@ -91,13 +91,13 @@
     <mkdir dir="${widevine-dir}/bin" />
     <javac includeantruntime="false"
       srcdir="${widevine-dir}/src" destdir="${widevine-dir}/bin"
-      classpath="${builder-dir}/bin:${clearkey-dir}/bin:${commons-codec-jar}:${gson-jar}:${protobuf-jar}" />
+      classpath="${builder-dir}/bin:${clearkey-dir}/bin/:${commons-codec-jar}:${gson-jar}:${protobuf-jar}" />
     <jar destfile="${widevine-dir}/widevine.jar" basedir="${widevine-dir}/bin">
       <manifest>
         <attribute name="Main-Class"
           value="org.cablelabs.widevine.cryptgen.CryptfileGen" />
         <attribute name="Class-Path"
-          value="${builder-dir}/bin:${commons-codec-jar}:${gson-jar}:${clearkey-dir}/bin:${protobuf-jar}" />
+          value="${builder-dir}/bin/ ${commons-codec-jar} ${gson-jar} ${clearkey-dir}/bin/ ${protobuf-jar}" />
       </manifest>
     </jar>
   </target>
